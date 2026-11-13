@@ -11,6 +11,17 @@ indent_style = space
 indent_size = 4
 # Compose composables are PascalCase by convention (HomeScreen, DoomscrollTheme, ...)
 ktlint_standard_function-naming = disabled
+# The ktlint 1.3+ "aggressive wrapping" family fights idiomatic Compose formatting
+# (Modifier chains, multiline call arguments, expression bodies). Disabled as a family;
+# core style rules (indent, imports, spacing, basic wrapping, trailing commas) stay on.
+# NOTE: ktlint crashes ("failed to parse file") when a rule's DEPENDENTS stay enabled,
+# so each entry also disables its known dependency chain.
+ktlint_standard_multiline-expression-wrapping = disabled
+ktlint_standard_string-template-indent = disabled
+ktlint_standard_function-signature = disabled
+ktlint_standard_function-expression-body = disabled
+ktlint_standard_property-wrapping = disabled
+ktlint_standard_class-signature = disabled
 
 [*.{yml,yaml}]
 indent_style = space

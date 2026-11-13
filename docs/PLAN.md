@@ -255,6 +255,20 @@ FreshRSS/Miniflux sync · Mastodon sources · "news near me" geo feed · multi-w
 
 **Phase 0:** I scaffold the project — Gradle/Compose app, GPL-3.0 LICENSE, README stub, CI workflow, theme, empty shell — push it to GitHub, and you install it on the S23 Ultra. Then we roll straight into Phase 1.
 
+**Phase 1 status (Nov 13, 2026) — MVP news reader, code-complete:**
+- [x] Feed pipeline: `FeedFetcher` (conditional GET via ETag/Last-Modified, https-only, BOM/charset sniffing) → `FeedParser` (RSS 2.0/RDF, Atom, JSON Feed 1.x, Media RSS, enclosures, CDATA, entity handling, lenient RFC-822/ISO-8601 dates)
+- [x] Google News: URL builder for top stories, 8 topics, geo/city feeds, and search with operators (`intitle:`, `site:`, `OR`, `when:1d/7d/1y`) across 8 locales; "Headline - Publisher" title splitting
+- [x] `GnRedirectResolver`: offline protobuf/base64 decode → `batchexecute` endpoint → graceful fallback to opening the redirect (circuit breaker: 3 consecutive failures stops the batch; cap 15 resolves/sync)
+- [x] Anti-sponsored (first layer of plan §7): conservative title/category heuristics at ingest; everything hidden is logged with a reason and reviewable/reversible via the "Filtered (n)" dialog
+- [x] Link hygiene: utm_*/fbclid/gclid/etc. stripped, leading `/amp/` unwrapped before opening or sharing; opens in Custom Tabs
+- [x] Storage: Room (sources, articles; unique `(sourceId, guid)`; FK cascade; 30-day prune of unsaved items)
+- [x] Sync: `SyncEngine` (mutex-guarded, per-source error capture, RSS sources auto-rename from feed title) + WorkManager periodic every 2h + auto-sync on app open when stale >15min + pull-to-refresh
+- [x] UI: Feed / Saved / Sources tabs; article cards (Coil images, publisher · relative time, unread styling); mark-read, mark-all-read, save, hide, share; source list with enable toggle, last-sync/error status, delete; Add-source bottom sheet (topics multi-select, search builder, RSS URL with http:// warning, edition chips)
+- [x] Quality gate green locally: 48 unit tests (parser fixtures incl. Google News quirks, dates, URL builders, sanitizer, sponsor filter, redirect decoder), ktlint clean
+- [x] ktlint config note: disabled `function-naming` (Compose convention) + the `multiline-expression-wrapping` family (`function-signature`, `function-expression-body`, `property-wrapping`, `class-signature`, `string-template-indent`) — ktlint crashes if a disabled rule's dependents stay enabled; documented in `.editorconfig`
+- [ ] Pushed to `main`, CI green
+- [ ] Installed on the S23 Ultra; 3 days of daily driving without Samsung's media page → **Phase 1 DoD**
+
 ---
 
 ## Appendix A — Source endpoint catalog (turnkey reference)

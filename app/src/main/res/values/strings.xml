@@ -2,5 +2,64 @@
 <resources>
     <string name="app_name">Doomscroll Ad Free</string>
     <string name="tagline">Your feeds. Zero ads. Zero tracking.</string>
-    <string name="planned_tabs">For You · News · Videos · Podcasts · Communities</string>
+
+    <string name="tab_feed">Feed</string>
+    <string name="tab_saved">Saved</string>
+    <string name="tab_sources">Sources</string>
+
+    <string name="feed_empty_title">No sources yet</string>
+    <string name="feed_empty_body">Add Google News topics, keyword searches, or any RSS feed — your ad-free media page starts filling up right away.</string>
+    <string name="feed_empty_cta">Add your first source</string>
+    <string name="feed_no_articles_body">No articles yet.\nPull down to refresh, or check Sources for sync errors.</string>
+
+    <string name="action_refresh">Refresh</string>
+    <string name="action_mark_all_read">Mark all read</string>
+    <string name="action_filtered">Filtered (%1$d)</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_close">Close</string>
+
+    <string name="article_save">Save</string>
+    <string name="article_unsave">Unsave</string>
+    <string name="article_hide">Hide</string>
+    <string name="article_share">Share</string>
+
+    <string name="saved_title">Saved</string>
+    <string name="saved_empty">Nothing saved yet</string>
+    <string name="saved_empty_body">Tap Save on any article and it will wait for you here.</string>
+
+    <string name="sources_title">Sources</string>
+    <string name="sources_add">Add source</string>
+    <string name="sources_empty_title">No sources yet</string>
+    <string name="sources_empty_body">Add Google News topics and searches, or paste any RSS/Atom feed URL.</string>
+    <string name="source_type_gn_topic">Google News topic</string>
+    <string name="source_type_gn_search">Google News search</string>
+    <string name="source_type_rss">RSS/Atom feed</string>
+    <string name="source_never_synced">Never synced</string>
+    <string name="source_synced_at">Synced %1$s</string>
+    <string name="source_title_gn_topic">Google News · %1$s (%2$s)</string>
+    <string name="source_title_gn_search">Search · \"%1$s\" (%2$s)</string>
+
+    <string name="add_sheet_gn_tab">Google News</string>
+    <string name="add_sheet_search_tab">Search</string>
+    <string name="add_sheet_rss_tab">RSS URL</string>
+    <string name="add_sheet_locale">Edition</string>
+    <string name="add_sheet_topics_hint">Pick one or more topics</string>
+    <string name="add_sheet_add_n">Add %1$d sources</string>
+    <string name="add_sheet_search_label">Search query</string>
+    <string name="add_sheet_search_hint">e.g. formula 1, pixel phones</string>
+    <string name="add_sheet_search_operators">Operators: intitle: · site:reuters.com · OR · when:1d/7d/1y</string>
+    <string name="add_sheet_add_search">Add search feed</string>
+    <string name="add_sheet_rss_label">Feed URL</string>
+    <string name="add_sheet_rss_hint">https://example.com/feed.xml</string>
+    <string name="add_sheet_rss_http_warning">Android blocks plain http:// feeds — please use an https:// URL</string>
+    <string name="add_sheet_add_rss">Add feed</string>
+
+    <string name="synced_new">%1$d new articles</string>
+    <string name="synced_errors">Sync finished with %1$d source error(s) — see Sources</string>
+    <string name="synced_up_to_date">Up to date</string>
+
+    <string name="filtered_title">Filtered articles</string>
+    <string name="filtered_empty">Nothing has been filtered yet.</string>
+    <string name="filtered_unhide">Unhide</string>
+    <string name="filtered_unhide_all">Unhide all</string>
 </resources>
