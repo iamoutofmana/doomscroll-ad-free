@@ -1,0 +1,282 @@
+# Doomscroll Ad Free — Project Plan
+
+**An ad-free, open-source replacement for the Samsung media page.**
+
+- **App name:** Doomscroll Ad Free (decided — Nov 2026)
+- **Package/applicationId:** `io.github.iamoutofmana.doomscroll` (locked)
+- **Repo:** [github.com/iamoutofmana/doomscroll-ad-free](https://github.com/iamoutofmana/doomscroll-ad-free) (created, public, empty — Nov 2026)
+- **Target device:** Samsung Galaxy S23 Ultra (One UI), any modern Android 8+ phone
+- **Stack:** Kotlin + Jetpack Compose (locked)
+- **License:** GPL-3.0 (locked)
+- **Distribution:** GitHub Releases → IzzyOnDroid → F-Droid (all FOSS)
+- **Build style:** vibe-coded with AI in small, shippable phases — each phase has a Definition of Done
+
+---
+
+## 1. Vision
+
+A fast, private, beautiful "media page" app that shows **news, videos, podcasts, and community content from sources *you* choose — with zero ads, zero sponsored items, and zero tracking.** It replaces the Samsung media page on your home screen via a large scrollable widget, and it's open source so anyone can use, inspect, and improve it.
+
+### Goals
+- Replace the Samsung media page experience (widget on a dedicated home page + full app)
+- Discover-like content via **Google News public RSS** (topics, locations, keyword searches)
+- Plus: any RSS/Atom/JSON Feed, YouTube channels, podcasts, Reddit, Lemmy, Hacker News
+- Never show ads or sponsored/promoted content — actively filter them out
+- 100% on-device: no accounts, no telemetry, network calls only to feeds you configure
+- FOSS forever: GPL-3.0, F-Droid-compatible, no proprietary dependencies
+
+### Non-goals (v1)
+- iOS (widget/system integration is Android-first)
+- Scraping Google Discover's private endpoints (see §2 — no API exists; scraping violates ToS and is brittle)
+- Server-side sync service (optional self-hosted FreshRSS/Miniflux sync is post-1.0)
+- Social features (posting, comments)
+
+---
+
+## 2. Key constraints — research findings (don't re-litigate)
+
+1. **Samsung will not let a third-party app be the media page.** One UI's swipe-left panel only supports Google Discover or Samsung News; community requests for "any app as media page" have gone unanswered for years. **Our play:** turn the media page OFF and place our large scrollable widget on a dedicated home screen page. Visually and functionally nearly identical (§8).
+2. **Google Discover has no API.** It never had one, and the old Feed API was killed in 2016. Personalized Discover is tied to your Google account, so third parties can't fetch "your" Discover anyway. **The legitimate, stable proxy is Google News public RSS** — topic feeds, local/geo feeds, and keyword-search feeds with powerful operators. This covers most of what Discover surfaces, minus the ads.
+3. **Google News RSS quirks** (handled by a Phase 1 spike + risk plan, §11):
+   - Links are `news.google.com/rss/articles/<base64>` redirects, not publisher URLs. Newer ones require calling Google's internal `batchexecute` endpoint to decode (well-documented in open-source decoders like `googlenewsdecoder`). **Fallback:** just open the redirect URL — browsers resolve it to the publisher fine.
+   - The feed format is community-documented, not officially documented → pin formats with test fixtures.
+4. **Other sources are easy:** YouTube exposes per-channel RSS; podcasts are RSS with enclosures; Reddit and Lemmy expose public RSS (Reddit needs a polite custom User-Agent); Hacker News has the free Algolia JSON API.
+5. **Scrollable feed widgets are fully supported** via Jetpack Glance (`LazyColumn`) — this is what makes a "media page" widget possible.
+
+---
+
+## 3. Product design (high level)
+
+**App tabs** (mirrors the old media page, plus communities):
+
+| Tab | Content | Sources |
+|---|---|---|
+| **For You** | Ranked mix from all your sources | Everything (on-device ranking, Phase 4) |
+| **News** | Articles with images | Google News topics/searches + any RSS/Atom feed |
+| **Videos** | Video cards | YouTube channels |
+| **Podcasts** | Episode list | Podcast RSS feeds |
+| **Communities** | Posts/discussions | Reddit, Lemmy, Hacker News |
+
+**Card anatomy:** hero image, source name + favicon, title, age, media badge. Actions: open (Custom Tabs or built-in Reader), save, hide ("show me less like this"), share.
+
+**Reader mode:** extracted article text rendered in-app (no web ads), offline cache, font/theme controls. One-tap "open original site" stays available — support the publishers you like.
+
+**Design:** Material 3 + dynamic color (matches One UI theming), AMOLED-black dark option, large-type "media" feel. Edge-to-edge, pull-to-refresh.
+
+**Widget (the media page replacement):** scrollable 4×3 / 4×4 / 4×5 feed widget. Tap a card → open article; tap header → open app. Refresh: periodic + on phone unlock + on app open. Configurable per instance (For You / News / Videos / Podcasts).
+
+**Anti-ad guarantee:** no ad SDKs, no analytics, no trackers — we render every card ourselves, so nothing *can* inject an ad. Layered filtering per §7.
+
+---
+
+## 4. Tech stack (locked)
+
+| Layer | Choice | License | Why |
+|---|---|---|---|
+| Language | Kotlin 2.x, JDK 17 | — | Native, FOSS-standard |
+| UI | Jetpack Compose + Material 3 + dynamic color | Apache-2.0 | Modern, One UI-friendly |
+| Widgets | androidx.glance 1.1+ (`LazyColumn`) | Apache-2.0 | Scrollable feed widget |
+| Database | Room | Apache-2.0 | Local-first storage |
+| Background sync | WorkManager | Apache-2.0 | Battery-friendly periodic sync |
+| Network | OkHttp + kotlinx.serialization | Apache-2.0 | Robust HTTP, conditional GET |
+| Feed parsing | Custom RSS 2.0 / Atom / JSON Feed / Media-RSS parser (ours) | project GPL-3.0 | Small, fixture-tested, handles real-world feed weirdness |
+| Reader extraction | jsoup | MIT | Article text extraction + HTML sanitization |
+| Images | Coil | Apache-2.0 | Async image loading |
+| Audio (v2) | Media3 ExoPlayer | Apache-2.0 | Podcast playback later |
+| Links out | Chrome Custom Tabs | — | Fast, private-ish article opening |
+| DI | Manual lightweight DI | — | Keeps build + F-Droid simple |
+| Min/target SDK | 26 / current stable | — | Covers ~95%+ of devices |
+
+All dependencies are FOSS → **F-Droid compatible**.
+
+---
+
+## 5. Architecture (high level)
+
+Start as a **single-module app** with clean package boundaries; extract Gradle modules only if it grows:
+
+```
+ui/         Compose screens, navigation, theming
+domain/     models, filter engine, For-You ranking (pure Kotlin, testable)
+data/       Room DB, repositories, sync orchestration (WorkManager)
+feedparser/ pure Kotlin parser: RSS/Atom/JSON Feed/Media-RSS (fixture-tested)
+widget/     Glance widgets
+```
+
+**Data flow:** WorkManager sync → fetch (conditional GET with ETag) → parse → normalize → **filter engine** (user rules + sponsored heuristics + dedupe) → Room → observed by Compose UI and the Glance widget.
+
+**Core entities (sketch):**
+- `Source(id, type: GN_TOPIC|GN_SEARCH|RSS|YOUTUBE|PODCAST|REDDIT|LEMMY|HN|JSONFEED, url, title, category, enabled, syncInterval, lastSync, etag)`
+- `Article(id, sourceId, guid, title, resolvedUrl, author, publishedAt, image, summary, mediaType, mediaUrl, read, saved, hidden, hiddenReason, dedupeKey)`
+- `Rule(id, type: HIDE_KEYWORD|HIDE_DOMAIN|BLOCKLIST, pattern, enabled)`
+- `Interaction(articleTags, action: OPEN|HIDE|SAVE, timestamp)` — local signals for For You ranking
+
+---
+
+## 6. Roadmap — vibe-code phases (each shippable and testable)
+
+> Rhythm: build a phase with AI → install on the S23 Ultra → use it for a few days → note what's wrong → next phase. Timeline assumes part-time sessions (~4–8 weeks total to v1.0).
+
+### Phase 0 — Foundations (1 session)
+Local dev setup on this Windows machine (Git + GitHub CLI — see §13), GitHub repo, GPL-3.0 LICENSE, README stub, CI (ktlint + unit tests + debug APK), app scaffold, base theme, manual DI wiring.
+**DoD:** CI green; app installs on your phone showing a themed empty state.
+
+### Phase 1 — MVP news reader (1–2 weeks of sessions)
+- Google News source picker: topics list, keyword-search builder (operators preview), local/geo feeds, locale selector
+- Add any RSS/Atom/JSON Feed URL
+- Fetch + parse + store; unified News feed; pull-to-refresh; background sync every ~2h
+- Image cards; open in Custom Tabs with tracking params stripped
+- Mark-read, save, basic hide
+- **Spike: Google News redirect decoding** (batchexecute technique; fallback = open redirect URL)
+**DoD:** daily-driver usable for news — you read it for 3 days without opening Samsung's page.
+
+### Phase 2 — The "media page moment" (1–2 weeks)
+- Glance widget 4×5 (+4×3, 4×4): scrollable For You feed, per-card deep links, refresh strategy (§8)
+- Sponsored/advertorial filter engine + user rules (hide keywords/domains) + story dedupe
+- Reader mode (jsoup extraction, sanitization, offline cache, font controls)
+- OPML import/export (bring subscriptions from other apps)
+**DoD:** media page turned OFF on your phone; the widget replaces it; zero sponsored items after a week of use.
+
+### Phase 3 — Full media (1–2 weeks)
+- YouTube channels (per-channel RSS; open with YouTube / NewPipe / browser — user choice)
+- Podcasts (subscribe to feeds, episode list; v1 hands off to external player, v2 in-app Media3 playback)
+- Reddit (`r/x/.rss` with custom User-Agent), Lemmy community feeds, Hacker News front page (Algolia API)
+- Videos, Podcasts, Communities tabs live
+**DoD:** all four content types work; widget can be configured per tab.
+
+### Phase 4 — For You (1 week)
+- On-device ranking: recency + source weights + topic affinity from your open/hide/save interactions
+- "Show me less like this" feedback loop
+- Per-source weight settings
+**DoD:** For You tab feels noticeably better than chronology; all tuning stays on-device.
+
+### Phase 5 — v1.0 release (a few days)
+- Icon + branding (name locked: "Doomscroll Ad Free"), screenshots, fastlane metadata
+- Privacy policy ("collects nothing"), CHANGELOG, semver tag
+- Signed GitHub Release APK; IzzyOnDroid submission; F-Droid submission
+- Weblate-ready strings
+**DoD:** a stranger can install it in under a minute and get an ad-free media page.
+
+### Post-1.0 backlog (ideas, not commitments)
+FreshRSS/Miniflux sync · Mastodon sources · "news near me" geo feed · multi-widget dashboards · tablet/Two UI layouts · TTS "listen queue" for articles · on-device sponsored classifier trained on your feedback.
+
+---
+
+## 7. Anti-ad & anti-sponsored spec (the core promise)
+
+1. **Architecture:** we render our own cards; no ad SDK, no analytics, no trackers — nothing *can* show an ad.
+2. **Link hygiene:** strip `utm_*`, `fbclid`, `gclid`, `ref` and similar tracking params; unwrap AMP links to canonical URLs.
+3. **Sponsored-content detection** (publishers still sneak "native ads" into feeds):
+   - Heuristics: regex over title/categories/author — *sponsored, advertorial, paid post/content/promotion, partner content, brought to you by, presented by, promoted, native ad, #ad, affiliate*
+   - Structured: some feeds mark sponsorships in categories or `dc:creator` — honor those
+   - User rules: hide by keyword or domain; optional community-maintained ad-farm blocklist file (importable, default off)
+   - Every match is **logged with its reason and one-tap reversible** — never silently wrong; conservative defaults; user rules always win
+4. **Dedupe:** cluster near-identical stories (normalized-title similarity + time window) so one story from 8 outlets appears once.
+5. **Reader mode** avoids publisher-page ads for in-app reading; original-site opening stays one tap away.
+6. *(Later, optional)* on-device classifier trained on your hide/show feedback — heuristics first.
+
+---
+
+## 8. The widget — how it replaces the media page
+
+**Behavior:** scrollable `LazyColumn` of cards (image, source, title, age). Tap card → article; tap header → app. Sizes 4×3 / 4×4 / 4×5. Each widget instance binds to a view (For You, News, Videos, Podcasts).
+
+**Refresh budget:** WorkManager every 2–4h + refresh on phone unlock + refresh whenever the app opens + manual button. (Doze/battery-saver can defer updates; expectations documented in README.)
+
+**One UI setup guide (ships in README + in-app onboarding):**
+1. Home screen settings → turn **off** the media page / Google Discover panel
+2. Long-press wallpaper → Widgets → Doomscroll Ad Free → drag the 4×5 widget onto a dedicated page
+3. Optional: make that page the swipe-adjacent "first" page — you now swipe to *your* media page
+
+---
+
+## 9. Privacy principles (documented + enforced)
+
+- All data local (Room); no account, no telemetry, no crash reporting
+- Network calls **only** to user-configured source URLs (plus their images) — no hardcoded third-party calls
+- Cleartext HTTP sources get a visible warning
+- Full data export/import: OPML for sources + JSON backup for state
+- Privacy policy is one line: *"Doomscroll Ad Free collects nothing."*
+
+---
+
+## 10. Open-source project setup
+
+- **Repo (GitHub, public):** README with screenshots + the §8 setup guide, LICENSE (GPL-3.0), CONTRIBUTING.md, CODE_OF_CONDUCT.md, SECURITY.md, issue templates (bug/feature), GitHub Discussions on, ADR folder (`docs/adr/`) so future-you knows *why*
+- **CI (GitHub Actions):** ktlint, unit tests, assemble debug on every PR; release workflow: tag → build → attach signed APK
+- **Distribution ladder:** GitHub Releases (day one) → **IzzyOnDroid** (quick FOSS repo) → **F-Droid** (metadata + fastlane screenshots + reproducible build). Play Store optional later ($25 once; app is policy-clean since nothing is scraped)
+- **i18n:** externalized strings from day 1; Weblate (free for FOSS) after v1.0
+- **Versioning:** semver + CHANGELOG.md; tagged releases
+- **Community:** "good first issue" labels, roadmap project board, no-code-of-conduct-drama baseline
+
+---
+
+## 11. Risks & mitigations
+
+| Risk | Impact | Mitigation |
+|---|---|---|
+| Google News RSS format drift (undocumented) | Parser breaks | Fixture-based tests, defensive parser, quick patch releases |
+| Google News redirect decoding changes | Clean links / reader mode break | Phase 1 spike; fallback = open redirect URL (browser resolves it); community decoders tracked |
+| Reddit blocks default User-Agents | Subreddit feeds fail | Custom UA + backoff + caching; per-source sync intervals |
+| Publisher RSS gives truncated text | Reader shows short articles | Reader-mode full fetch; graceful fallback to Custom Tabs |
+| Widget refresh deferred (Doze) | Stale widget content | Refresh on unlock + on app open; document expectations |
+| One UI widget sizing quirks | Broken layout on Samsung | Three widget sizes; S23 Ultra is the first-class test device |
+| Sponsor-filter false positives | User misses real stories | Conservative defaults, logged + reversible, user rules override |
+| Name/trademark collision | Rename before launch | Name locked: "Doomscroll Ad Free" — no Google/Samsung/Discover marks; existing "Doomscroll" apps are screen-time blockers (different category, no conflict found Nov 2026); re-check stores/domain before Phase 5 |
+| Vibe-code drift/quality | Silent regressions | Pure-logic tests (parser, filters), CI gate, small phases, DoD checklists |
+| Solo-maintainer burnout | Project stalls | Tight v1.0 scope; backlog parking lot; ADRs keep context cheap |
+
+---
+
+## 12. Decisions status
+
+- [x] **App name: "Doomscroll Ad Free"** (decided Nov 2026 — existing "Doomscroll" apps are screen-time blockers, different category, no conflict found)
+- [x] **Repo:** [github.com/iamoutofmana/doomscroll-ad-free](https://github.com/iamoutofmana/doomscroll-ad-free) — created, public, empty (Nov 2026)
+- [x] **Android applicationId:** `io.github.iamoutofmana.doomscroll` (locked)
+- [ ] App icon direction
+- [ ] Default Google News edition (locale: `hl` / `gl` / `ceid` — presumably `en-US` / `US` / `US:en`)
+- [ ] Ever ship to Play Store, or FOSS-only channels?
+
+**Org vs. personal:** an org is only worth it for multiple maintainers or a neutral project brand (`github.com/<org>/doomscroll-ad-free`). You can transfer a personal repo to an org later and GitHub auto-redirects all old URLs — zero penalty for starting personal. Orgs are free: `github.com/organizations/new`.
+
+---
+
+## 13. Next session
+
+**Phase 0 status (Nov 13, 2026):**
+- [x] Repo created (public, empty): `github.com/iamoutofmana/doomscroll-ad-free`
+- [x] applicationId locked: `io.github.iamoutofmana.doomscroll`
+- [x] Phase 0 scaffold built locally in `doomscroll-ad-free/` — Gradle/Compose app, GPL-3.0 LICENSE, CI workflow (ktlint + tests + debug APK artifact), themed empty state, identity guard test
+- [ ] Install Git + GitHub CLI on this machine (`winget install Git.Git` + `winget install GitHub.cli` — agent runs these on approval)
+- [ ] `gh auth login` — **the only step Rob must do** (browser sign-in; the agent cannot authenticate for you)
+- [ ] Android Studio install (or CI-only APK loop) — decision pending
+- [ ] Agent: `git init` → commit → push to `main` → CI green → sideload first APK on the S23 Ultra
+
+**Phase 0:** I scaffold the project — Gradle/Compose app, GPL-3.0 LICENSE, README stub, CI workflow, theme, empty shell — push it to GitHub, and you install it on the S23 Ultra. Then we roll straight into Phase 1.
+
+---
+
+## Appendix A — Source endpoint catalog (turnkey reference)
+
+**Google News RSS** (all take `hl` / `gl` / `ceid` locale params that must agree, e.g. `hl=en-US&gl=US&ceid=US:en`):
+- Top stories: `https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en`
+- Topics: `…/rss/headlines/section/topic/{WORLD|NATION|BUSINESS|TECHNOLOGY|ENTERTAINMENT|SPORTS|SCIENCE|HEALTH}?…`
+- Local/geo: `…/rss/headlines/section/geo/{City}?…`
+- Keyword search: `…/rss/search?q={query}&…` — supports operators: `intitle:`, `allintitle:`, `site:reuters.com`, `OR`, `when:1h|1d|7d|1y`, quoted exact phrases. Up to ~100 items.
+- Item links are `news.google.com/rss/articles/<base64>` redirects → decode via `batchexecute` technique (see `googlenewsdecoder`) or open the redirect directly.
+
+**YouTube:** `https://www.youtube.com/feeds/videos.xml?channel_id=UC…` (or `?playlist_id=PL…`)
+
+**Podcasts:** any podcast RSS URL (discover via PodcastIndex.org); OPML import from existing apps
+
+**Reddit:** `https://www.reddit.com/r/{sub}/.rss` (also `search.rss?q=…`); **requires custom User-Agent** like `DoomscrollAdFree/0.1 (github.com/<you>/doomscroll-ad-free)`
+
+**Lemmy:** `https://{instance}/feeds/c/{community}.xml?sort=New`
+
+**Hacker News:** `https://hn.algolia.com/api/v1/search?tags=front_page` (JSON, no key)
+
+**Generic feeds:** RSS 2.0, Atom, JSON Feed 1.1; parser must handle `media:content` + enclosures (images/audio/video), `content:encoded`, CDATA, charset quirks, relative-URL resolution, and Dublin Core dates.
+
+## Appendix B — Sync behavior
+
+Conditional GET (`ETag` / `If-Modified-Since`) · per-source sync intervals · staggered WorkManager jobs · Wi-Fi-only option · battery-not-low constraint · sync on app open + phone unlock (widget freshness).
