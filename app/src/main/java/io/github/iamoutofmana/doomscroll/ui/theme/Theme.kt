@@ -16,23 +16,25 @@ private val Ink = Color(0xFF10151A)
 private val Paper = Color(0xFFE9EEF2)
 private val Signal = Color(0xFFFF6A3D)
 
-private val LightScheme = lightColorScheme(
-    primary = Signal,
-    onPrimary = Color.White,
-    background = Paper,
-    onBackground = Ink,
-    surface = Paper,
-    onSurface = Ink,
-)
+private val LightScheme =
+    lightColorScheme(
+        primary = Signal,
+        onPrimary = Color.White,
+        background = Paper,
+        onBackground = Ink,
+        surface = Paper,
+        onSurface = Ink,
+    )
 
-private val DarkScheme = darkColorScheme(
-    primary = Signal,
-    onPrimary = Color.White,
-    background = Ink,
-    onBackground = Paper,
-    surface = Ink,
-    onSurface = Paper,
-)
+private val DarkScheme =
+    darkColorScheme(
+        primary = Signal,
+        onPrimary = Color.White,
+        background = Ink,
+        onBackground = Paper,
+        surface = Ink,
+        onSurface = Paper,
+    )
 
 @Composable
 fun DoomscrollTheme(
@@ -41,13 +43,14 @@ fun DoomscrollTheme(
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit,
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+    val colorScheme =
+        when {
+            dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+                val context = LocalContext.current
+                if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            }
+            darkTheme -> DarkScheme
+            else -> LightScheme
         }
-        darkTheme -> DarkScheme
-        else -> LightScheme
-    }
     MaterialTheme(colorScheme = colorScheme, content = content)
 }

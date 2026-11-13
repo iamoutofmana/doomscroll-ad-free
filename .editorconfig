@@ -9,6 +9,8 @@ trim_trailing_whitespace = true
 [*.{kt,kts}]
 indent_style = space
 indent_size = 4
+# Compose composables are PascalCase by convention (HomeScreen, DoomscrollTheme, ...)
+ktlint_standard_function-naming = disabled
 
 [*.{yml,yaml}]
 indent_style = space

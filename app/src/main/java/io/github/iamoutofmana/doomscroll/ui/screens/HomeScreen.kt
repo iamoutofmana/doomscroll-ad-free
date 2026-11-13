@@ -24,9 +24,7 @@ import io.github.iamoutofmana.doomscroll.R
 @Composable
 fun HomeScreen() {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
+        modifier = Modifier.fillMaxSize().padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
