@@ -266,8 +266,17 @@ FreshRSS/Miniflux sync · Mastodon sources · "news near me" geo feed · multi-w
 - [x] UI: Feed / Saved / Sources tabs; article cards (Coil images, publisher · relative time, unread styling); mark-read, mark-all-read, save, hide, share; source list with enable toggle, last-sync/error status, delete; Add-source bottom sheet (topics multi-select, search builder, RSS URL with http:// warning, edition chips)
 - [x] Quality gate green locally: 48 unit tests (parser fixtures incl. Google News quirks, dates, URL builders, sanitizer, sponsor filter, redirect decoder), ktlint clean
 - [x] ktlint config note: disabled `function-naming` (Compose convention) + the `multiline-expression-wrapping` family (`function-signature`, `function-expression-body`, `property-wrapping`, `class-signature`, `string-template-indent`) — ktlint crashes if a disabled rule's dependents stay enabled; documented in `.editorconfig`
-- [x] Pushed to `main`; CI green (run 43522633877 — 2m59s, 48 tests, lint, APK artifact)
+- [x] Pushed to `main`; CI green (run 43525317452 — 2m2s, 63 tests, lint, APK artifact)
 - [x] Installed on the S23 Ultra via `adb` streamed install (Nov 13, 2026)
+- [x] **Phase 1.5 feedback loop (live user testing):**
+    - [x] Cross-source dedupe by normalized title (7-day window) — same headline across GN "Top stories" vs "Technology" now shows once
+    - [x] New source types: YouTube channels, Reddit subreddits, Lemmy communities, Hacker News front page
+    - [x] `PopularSources.kt` URL builders (shared by UI + SyncEngine)
+    - [x] `HackerNewsParser` (custom Algolia JSON; skips Ask/Show self-posts)
+    - [x] Tests: 63 passing (added TitleNormalizer, PopularSources, HN parser, Atom/RSS image extraction)
+    - [x] AddSourceSheet split into "Google News" / "More sources" tabs
+    - [x] Pushed + installed on device (commit c15c948)
+- [x] Image extraction: confirmed working for Atom `<content>` (The Verge) and RSS `<description>` (hero images from non-Google-News sources). Google News's public RSS genuinely strips images from items — hero-image extraction for GN items is Phase 2 (reader mode / publisher-page scraping).
 - [ ] 3 days of daily driving without Samsung's media page → **Phase 1 DoD** (in progress — collecting annoyances for Phase 2)
 
 ---
