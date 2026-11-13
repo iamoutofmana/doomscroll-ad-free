@@ -247,10 +247,10 @@ FreshRSS/Miniflux sync · Mastodon sources · "news near me" geo feed · multi-w
 - [x] Repo created (public, empty): `github.com/iamoutofmana/doomscroll-ad-free`
 - [x] applicationId locked: `io.github.iamoutofmana.doomscroll`
 - [x] Phase 0 scaffold built locally in `doomscroll-ad-free/` — Gradle/Compose app, GPL-3.0 LICENSE, CI workflow (ktlint + tests + debug APK artifact), themed empty state, identity guard test
-- [ ] Install Git + GitHub CLI on this machine (`winget install Git.Git` + `winget install GitHub.cli` — agent runs these on approval)
-- [ ] `gh auth login` — **the only step Rob must do** (browser sign-in; the agent cannot authenticate for you)
-- [ ] Android Studio install (or CI-only APK loop) — decision pending
-- [ ] Agent: `git init` → commit → push to `main` → CI green → sideload first APK on the S23 Ultra
+- [x] Git 2.56 + GitHub CLI 2.104 installed; authenticated; git credential helper wired
+- [x] Android Studio 2026.2.2 installed; first-run SDK setup in progress
+- [x] Pushed to `main`; CI green in 2 cycles (run 43508195895 — one ktlint fix cycle: disabled `function-naming` for Compose, conformed to ktlint 1.3 `wrapping` rule)
+- [ ] Sideload first debug APK on the S23 Ultra (Actions artifact or `adb install` once Android Studio sync completes) → Phase 0 DoD met
 
 **Phase 0:** I scaffold the project — Gradle/Compose app, GPL-3.0 LICENSE, README stub, CI workflow, theme, empty shell — push it to GitHub, and you install it on the S23 Ultra. Then we roll straight into Phase 1.
 
