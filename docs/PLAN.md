@@ -250,7 +250,8 @@ FreshRSS/Miniflux sync · Mastodon sources · "news near me" geo feed · multi-w
 - [x] Git 2.56 + GitHub CLI 2.104 installed; authenticated; git credential helper wired
 - [x] Android Studio 2026.2.2 installed; first-run SDK setup in progress
 - [x] Pushed to `main`; CI green in 2 cycles (run 43508195895 — one ktlint fix cycle: disabled `function-naming` for Compose, conformed to ktlint 1.3 `wrapping` rule)
-- [ ] Sideload first debug APK on the S23 Ultra (Actions artifact or `adb install` once Android Studio sync completes) → Phase 0 DoD met
+- [x] First debug APK installed on the S23 Ultra via `adb` (serial R5CW2162RCE, permanently authorized) — **Phase 0 DoD met (Nov 13, 2026)**
+- [x] Local toolchain note: Android Studio 2026.2.2 bundles JDK 25, which Gradle 8.10.x cannot run on → Temurin JDK 17.0.21 installed locally; `~/.gradle/gradle.properties` pins `org.gradle.java.home`; Studio's Gradle JDK must stay on 17 until a future Gradle 9 / AGP 9 upgrade (maintenance backlog)
 
 **Phase 0:** I scaffold the project — Gradle/Compose app, GPL-3.0 LICENSE, README stub, CI workflow, theme, empty shell — push it to GitHub, and you install it on the S23 Ultra. Then we roll straight into Phase 1.
 
