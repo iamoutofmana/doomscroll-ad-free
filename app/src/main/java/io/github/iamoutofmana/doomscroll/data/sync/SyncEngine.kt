@@ -8,6 +8,7 @@ import io.github.iamoutofmana.doomscroll.data.repo.ArticleRepository
 import io.github.iamoutofmana.doomscroll.data.repo.SourceRepository
 import io.github.iamoutofmana.doomscroll.domain.filter.SponsoredFilter
 import io.github.iamoutofmana.doomscroll.domain.googlenews.GoogleNews
+import io.github.iamoutofmana.doomscroll.domain.links.TitleNormalizer
 import io.github.iamoutofmana.doomscroll.domain.model.HiddenReason
 import io.github.iamoutofmana.doomscroll.domain.model.SourceType
 import io.github.iamoutofmana.doomscroll.feedparser.FeedParser
@@ -18,7 +19,8 @@ import kotlinx.coroutines.sync.withLock
 
 /**
  * The whole pipeline in one place (plan §5):
- * fetch (conditional GET) -> parse -> normalize -> sponsored filter -> store -> resolve GN links.
+ * fetch (conditional GET) -> parse -> normalize -> sponsored filter -> dedupe -> store
+ * -> resolve GN links.
  *
  * Sequential over sources on purpose: polite to servers, simple to reason about, and fast
  * enough for a personal number of feeds. A Mutex keeps UI-triggered refreshes and the
@@ -43,8 +45,15 @@ class SyncEngine(
         val enabled = sources.enabled()
         var newTotal = 0
         var failures = 0
+
+        // Cross-source dedupe window: 7 days. Same headline across multiple GN topics
+        // (Top stories, Technology, ...) or across GN + a direct RSS republish shows once.
+        val cutoffMs = clock() - DEDUPE_WINDOW_MS
+        val seenTitles: MutableSet<String> =
+            articles.recentTitles(cutoffMs).mapTo(mutableSetOf()) { TitleNormalizer.normalize(it) }
+
         for (src in enabled) {
-            val result = runCatching { syncSource(src) }
+            val result = runCatching { syncSource(src, seenTitles) }
             result
                 .onSuccess { newTotal += it }
                 .onFailure {
@@ -56,28 +65,43 @@ class SyncEngine(
         Stats(enabled.size, newTotal, failures)
     }
 
-    suspend fun syncSource(src: SourceEntity): Int =
-        when (val res = fetcher.fetch(src.url, src.etag, src.lastModified)) {
-            FeedFetcher.Result.NotModified -> {
-                sources.markSynced(src.id, clock(), src.etag, src.lastModified)
-                0
-            }
-            is FeedFetcher.Result.Failure -> {
-                sources.markError(src.id, res.message, clock())
-                0
-            }
-            is FeedFetcher.Result.Content -> ingest(src, res)
+    suspend fun syncSource(
+        src: SourceEntity,
+        seenTitles: MutableSet<String>? = null,
+    ): Int = when (val res = fetcher.fetch(src.url, src.etag, src.lastModified)) {
+        FeedFetcher.Result.NotModified -> {
+            sources.markSynced(src.id, clock(), src.etag, src.lastModified)
+            0
         }
+        is FeedFetcher.Result.Failure -> {
+            sources.markError(src.id, res.message, clock())
+            0
+        }
+        is FeedFetcher.Result.Content -> ingest(src, res, seenTitles)
+    }
 
     private suspend fun ingest(
         src: SourceEntity,
         res: FeedFetcher.Result.Content,
+        seenTitles: MutableSet<String>?,
     ): Int {
-        val feed = FeedParser.parse(res.body)
+        val feed = FeedParser.parse(res.body, sourceUrl = src.url)
         val now = clock()
         val isGn = src.sourceType == SourceType.GN_TOPIC || src.sourceType == SourceType.GN_SEARCH
 
-        val entities = feed.items.mapNotNull { item -> mapItem(item, src, feed, isGn, now) }
+        val entities = mutableListOf<ArticleEntity>()
+        for (item in feed.items) {
+            val entity = mapItem(item, src, feed, isGn, now) ?: continue
+            val normalizedTitle = TitleNormalizer.normalize(entity.title)
+            // Cross-source dedupe: skip if the same headline was already seen (either in a
+            // previously-synced source or earlier in this batch).
+            if (seenTitles != null) {
+                if (normalizedTitle in seenTitles) continue
+                seenTitles.add(normalizedTitle)
+            }
+            entities.add(entity)
+        }
+
         val rowIds = articles.insertAll(entities)
         val newCount = rowIds.count { it != -1L }
 
@@ -158,5 +182,6 @@ class SyncEngine(
         const val PRUNE_DAYS = 30
         const val RESOLVE_CAP = 15
         const val RESOLVE_FAILURE_LIMIT = 3
+        const val DEDUPE_WINDOW_MS = 7L * 24L * 60L * 60L * 1000L
     }
 }

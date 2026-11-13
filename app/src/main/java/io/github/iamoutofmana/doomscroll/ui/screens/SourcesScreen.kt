@@ -45,6 +45,7 @@ import io.github.iamoutofmana.doomscroll.R
 import io.github.iamoutofmana.doomscroll.data.db.SourceEntity
 import io.github.iamoutofmana.doomscroll.domain.googlenews.GoogleNews
 import io.github.iamoutofmana.doomscroll.domain.model.SourceType
+import io.github.iamoutofmana.doomscroll.domain.popularsources.PopularSources
 import io.github.iamoutofmana.doomscroll.domain.time.TimeText
 import io.github.iamoutofmana.doomscroll.ui.LocalAppContainer
 import kotlinx.coroutines.launch
@@ -189,6 +190,56 @@ fun SourcesScreen(contentPadding: PaddingValues) {
                     doSync()
                 }
             },
+            onAddYouTube = { channelId ->
+                showAdd = false
+                scope.launch {
+                    val url = PopularSources.youtubeChannelUrl(channelId)
+                    container.sourceRepository.add(
+                        SourceType.YOUTUBE,
+                        url,
+                        context.getString(R.string.source_title_youtube, channelId),
+                    )
+                    doSync()
+                }
+            },
+            onAddReddit = { subreddit ->
+                showAdd = false
+                scope.launch {
+                    val url = PopularSources.redditSubredditUrl(subreddit)
+                    if (url.isBlank()) return@launch
+                    val name = subreddit.trim().removePrefix("r/").removePrefix("/r/")
+                    container.sourceRepository.add(
+                        SourceType.REDDIT,
+                        url,
+                        context.getString(R.string.source_title_reddit, name),
+                    )
+                    doSync()
+                }
+            },
+            onAddLemmy = { instance, community ->
+                showAdd = false
+                scope.launch {
+                    val url = PopularSources.lemmyCommunityUrl(instance, community)
+                    if (url.isBlank()) return@launch
+                    container.sourceRepository.add(
+                        SourceType.LEMMY,
+                        url,
+                        context.getString(R.string.source_title_lemmy, community, instance.trim()),
+                    )
+                    doSync()
+                }
+            },
+            onAddHackerNews = {
+                showAdd = false
+                scope.launch {
+                    container.sourceRepository.add(
+                        SourceType.HACKER_NEWS,
+                        PopularSources.HACKER_NEWS_URL,
+                        context.getString(R.string.source_title_hackernews),
+                    )
+                    doSync()
+                }
+            },
         )
     }
 }
@@ -216,6 +267,10 @@ private fun SourceRow(
                 SourceType.GN_TOPIC -> stringResource(R.string.source_type_gn_topic)
                 SourceType.GN_SEARCH -> stringResource(R.string.source_type_gn_search)
                 SourceType.RSS -> stringResource(R.string.source_type_rss)
+                SourceType.YOUTUBE -> stringResource(R.string.source_type_youtube)
+                SourceType.REDDIT -> stringResource(R.string.source_type_reddit)
+                SourceType.LEMMY -> stringResource(R.string.source_type_lemmy)
+                SourceType.HACKER_NEWS -> stringResource(R.string.source_type_hackernews)
             }
             Text(
                 text = typeLabel,

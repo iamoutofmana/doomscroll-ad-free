@@ -67,4 +67,8 @@ interface ArticleDao {
 
     @Query("DELETE FROM articles WHERE savedAt IS NULL AND fetchedAt < :cutoff")
     suspend fun prune(cutoff: Long)
+
+    /** Titles published since `cutoff` ms ago, across all sources — used by cross-source dedupe. */
+    @Query("SELECT title FROM articles WHERE publishedAt IS NOT NULL AND publishedAt >= :cutoff")
+    suspend fun recentTitles(cutoff: Long): List<String>
 }

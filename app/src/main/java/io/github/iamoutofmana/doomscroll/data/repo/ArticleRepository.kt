@@ -37,6 +37,8 @@ class ArticleRepository(private val dao: ArticleDao) {
         dao.prune(cutoff)
     }
 
+    suspend fun recentTitles(sinceMs: Long): List<String> = dao.recentTitles(sinceMs)
+
     private companion object {
         const val DAY_MS = 86_400_000L
     }

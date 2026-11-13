@@ -34,14 +34,21 @@
     <string name="source_type_gn_topic">Google News topic</string>
     <string name="source_type_gn_search">Google News search</string>
     <string name="source_type_rss">RSS/Atom feed</string>
+    <string name="source_type_youtube">YouTube channel</string>
+    <string name="source_type_reddit">Reddit subreddit</string>
+    <string name="source_type_lemmy">Lemmy community</string>
+    <string name="source_type_hackernews">Hacker News</string>
     <string name="source_never_synced">Never synced</string>
     <string name="source_synced_at">Synced %1$s</string>
     <string name="source_title_gn_topic">Google News · %1$s (%2$s)</string>
     <string name="source_title_gn_search">Search · \"%1$s\" (%2$s)</string>
+    <string name="source_title_youtube">YouTube · %1$s</string>
+    <string name="source_title_reddit">r/%1$s</string>
+    <string name="source_title_lemmy">c/%1$s@%2$s</string>
+    <string name="source_title_hackernews">Hacker News · front page</string>
 
     <string name="add_sheet_gn_tab">Google News</string>
-    <string name="add_sheet_search_tab">Search</string>
-    <string name="add_sheet_rss_tab">RSS URL</string>
+    <string name="add_sheet_more_tab">More sources</string>
     <string name="add_sheet_locale">Edition</string>
     <string name="add_sheet_topics_hint">Pick one or more topics</string>
     <string name="add_sheet_add_n">Add %1$d sources</string>
@@ -53,6 +60,30 @@
     <string name="add_sheet_rss_hint">https://example.com/feed.xml</string>
     <string name="add_sheet_rss_http_warning">Android blocks plain http:// feeds — please use an https:// URL</string>
     <string name="add_sheet_add_rss">Add feed</string>
+
+    <string name="add_sheet_youtube_title">YouTube</string>
+    <string name="add_sheet_youtube_label">Channel ID or URL</string>
+    <string name="add_sheet_youtube_hint">UCxxxxxxxxxxxxxxxxxxxxxx</string>
+    <string name="add_sheet_youtube_hint2">Get it from any channel\'s /about page, or paste the channel URL</string>
+    <string name="add_sheet_add_youtube">Add YouTube channel</string>
+
+    <string name="add_sheet_reddit_title">Reddit</string>
+    <string name="add_sheet_reddit_label">Subreddit name</string>
+    <string name="add_sheet_reddit_hint">android, askreddit, pixel_phones</string>
+    <string name="add_sheet_add_reddit">Add subreddit</string>
+
+    <string name="add_sheet_lemmy_title">Lemmy</string>
+    <string name="add_sheet_lemmy_instance_label">Instance</string>
+    <string name="add_sheet_lemmy_instance_hint">lemmy.world</string>
+    <string name="add_sheet_lemmy_community_label">Community</string>
+    <string name="add_sheet_lemmy_community_hint">android, technology</string>
+    <string name="add_sheet_add_lemmy">Add Lemmy community</string>
+
+    <string name="add_sheet_hn_title">Hacker News</string>
+    <string name="add_sheet_hn_body">Adds the Hacker News front page — no input needed.</string>
+    <string name="add_sheet_add_hn">Add Hacker News</string>
+
+    <string name="add_sheet_rss_title">Any RSS/Atom feed</string>
 
     <string name="synced_new">%1$d new articles</string>
     <string name="synced_errors">Sync finished with %1$d source error(s) — see Sources</string>

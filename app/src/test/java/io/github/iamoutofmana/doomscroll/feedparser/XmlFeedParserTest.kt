@@ -100,6 +100,53 @@ class XmlFeedParserTest {
     }
 
     @Test
+    fun extractsHeroImageFromAtomContent() {
+        // Real-world Atom pattern (The Verge, etc.): hero image lives inside <content> as <figure><img ... src="...">
+        val fixture = """
+            <?xml version="1.0" encoding="utf-8"?>
+            <feed xmlns="http://www.w3.org/2005/Atom">
+              <title>Example Feed</title>
+              <entry>
+                <title>Big news</title>
+                <id>urn:xyz</id>
+                <link rel="alternate" href="https://example.com/big"/>
+                <summary>Short summary</summary>
+                <content type="html"><![CDATA[
+                  <figure>
+                    <img alt="" src="https://cdn.example.com/hero.jpg?w=1200" />
+                  </figure>
+                  <p>Body text here.</p>
+                ]]></content>
+              </entry>
+            </feed>
+        """.trimIndent()
+        val feed = XmlFeedParser.parse(fixture)
+        assertEquals(1, feed.items.size)
+        assertEquals("https://cdn.example.com/hero.jpg?w=1200", feed.items[0].imageUrl)
+    }
+
+    @Test
+    fun extractsHeroImageFromRssDescription() {
+        // Some RSS feeds put the hero image inside <description> HTML rather than <media:content>
+        val fixture = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <rss version="2.0">
+              <channel>
+                <title>Blog</title>
+                <item>
+                  <title>Post with inline image</title>
+                  <link>https://example.com/post</link>
+                  <description><![CDATA[<img src="https://cdn.example.com/hero.jpg"/> <p>text</p>]]></description>
+                </item>
+              </channel>
+            </rss>
+        """.trimIndent()
+        val feed = XmlFeedParser.parse(fixture)
+        assertEquals(1, feed.items.size)
+        assertEquals("https://cdn.example.com/hero.jpg", feed.items[0].imageUrl)
+    }
+
+    @Test
     fun unknownRootDegradesToEmptyFeed() {
         val feed = XmlFeedParser.parse("<nothing><child>text</child></nothing>")
         assertTrue(feed.items.isEmpty())

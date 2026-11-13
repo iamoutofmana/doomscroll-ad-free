@@ -27,7 +27,7 @@ class JsonFeedParserTest {
 
     @Test
     fun parsesJsonFeed() {
-        val feed = FeedParser.parse(fixture)
+        val feed = FeedParser.parse(fixture, sourceUrl = "https://example.com/feed.json")
         assertEquals("Example JSON Feed", feed.title)
         assertEquals("https://example.org/", feed.siteUrl)
         assertEquals(1, feed.items.size)
