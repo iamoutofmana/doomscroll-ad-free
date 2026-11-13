@@ -266,8 +266,9 @@ FreshRSS/Miniflux sync · Mastodon sources · "news near me" geo feed · multi-w
 - [x] UI: Feed / Saved / Sources tabs; article cards (Coil images, publisher · relative time, unread styling); mark-read, mark-all-read, save, hide, share; source list with enable toggle, last-sync/error status, delete; Add-source bottom sheet (topics multi-select, search builder, RSS URL with http:// warning, edition chips)
 - [x] Quality gate green locally: 48 unit tests (parser fixtures incl. Google News quirks, dates, URL builders, sanitizer, sponsor filter, redirect decoder), ktlint clean
 - [x] ktlint config note: disabled `function-naming` (Compose convention) + the `multiline-expression-wrapping` family (`function-signature`, `function-expression-body`, `property-wrapping`, `class-signature`, `string-template-indent`) — ktlint crashes if a disabled rule's dependents stay enabled; documented in `.editorconfig`
-- [ ] Pushed to `main`, CI green
-- [ ] Installed on the S23 Ultra; 3 days of daily driving without Samsung's media page → **Phase 1 DoD**
+- [x] Pushed to `main`; CI green (run 43522633877 — 2m59s, 48 tests, lint, APK artifact)
+- [x] Installed on the S23 Ultra via `adb` streamed install (Nov 13, 2026)
+- [ ] 3 days of daily driving without Samsung's media page → **Phase 1 DoD** (in progress — collecting annoyances for Phase 2)
 
 ---
 
