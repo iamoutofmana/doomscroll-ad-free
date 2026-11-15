@@ -3,6 +3,7 @@ package io.github.iamoutofmana.doomscroll
 import android.app.Application
 import io.github.iamoutofmana.doomscroll.data.container.AppContainer
 import io.github.iamoutofmana.doomscroll.data.sync.SyncScheduler
+import io.github.iamoutofmana.doomscroll.widget.refreshFeedWidget
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -16,6 +17,13 @@ class DoomscrollApplication : Application() {
         container = AppContainer(this)
         SyncScheduler.ensurePeriodic(this)
         invalidateStaleReaderCaches()
+        refreshWidgetOnLaunch()
+    }
+
+    private fun refreshWidgetOnLaunch() {
+        CoroutineScope(Dispatchers.IO).launch {
+            refreshFeedWidget(this@DoomscrollApplication)
+        }
     }
 
     /**

@@ -4,13 +4,16 @@ import android.content.Context
 import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
+import androidx.glance.LocalSize
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
+import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.lazy.LazyColumn
 import androidx.glance.appwidget.lazy.items
@@ -40,6 +43,9 @@ import io.github.iamoutofmana.doomscroll.domain.time.TimeText
  * Taps deep-link straight into reader mode.
  */
 class FeedWidget : GlanceAppWidget() {
+    // Exact sizing makes LocalSize return real dimensions, so we can fit rows without clipping.
+    override val sizeMode: SizeMode = SizeMode.Exact
+
     override suspend fun provideGlance(
         context: Context,
         id: GlanceId,
@@ -71,6 +77,12 @@ private fun WidgetContent(
     emptyText: String,
     openAppIntent: Intent,
 ) {
+    // Samsung's One UI (and some other launchers) do not deliver scroll gestures to
+    // widgets. Fit the rows that actually fit the host's height so nothing is clipped
+    // mid-row, instead of relying on scrolling.
+    val widgetHeight = LocalSize.current.height
+    val visible = articles.take(rowsThatFit(widgetHeight))
+
     Column(
         modifier = GlanceModifier
             .fillMaxSize()
@@ -93,19 +105,27 @@ private fun WidgetContent(
             )
         }
         Spacer(GlanceModifier.height(8.dp))
-        if (articles.isEmpty()) {
+        if (visible.isEmpty()) {
             Text(
                 text = emptyText,
                 style = TextStyle(color = ColorProvider(DIM), fontSize = 13.sp),
             )
         } else {
             LazyColumn(modifier = GlanceModifier.fillMaxSize()) {
-                items(articles) { article ->
+                items(visible) { article ->
                     WidgetArticleRow(article)
                 }
             }
         }
     }
+}
+
+/** Conservative row estimate: header + padding ≈ 44dp, a 2-line headline row ≈ 62dp. */
+private fun rowsThatFit(height: Dp): Int {
+    val available = height.value - HEADER_BLOCK_DP
+    if (available <= 0f) return 1
+    val rows = (available / ROW_HEIGHT_DP).toInt()
+    return rows.coerceIn(1, WIDGET_LIMIT)
 }
 
 @Composable
@@ -145,6 +165,8 @@ class FeedWidgetReceiver : GlanceAppWidgetReceiver() {
 }
 
 private const val WIDGET_LIMIT = 12
+private const val HEADER_BLOCK_DP = 44f
+private const val ROW_HEIGHT_DP = 62f
 private val BACKGROUND = Color(0xFF10151A)
 private val FOREGROUND = Color(0xFFE9EEF2)
 private val DIM = Color(0xFF9AA5AE)
