@@ -332,6 +332,7 @@ FreshRSS/Miniflux sync · Mastodon sources · "news near me" geo feed · multi-w
     - [x] `mobsfscan` source scan: **0 Android issues**
     - [x] README screenshots added (feed, reader, widget, help)
     - [ ] Install release build on device (requires uninstall of debug build — data reset, pending user approval)
+    - [x] **Release 1.0.0 installed on device (Nov 15)** — old debug data reset as expected; fresh install, sources added through UI, sync + feed verified under R8; zero crashes
     - [ ] F-Droid + IzzyOnDroid metadata; v1.0.0 tag + GitHub Release
     - [ ] On-device widget visual pass (add via launcher, check taps/sizing on One UI) — user action
     - [ ] OPML import/export — next session
