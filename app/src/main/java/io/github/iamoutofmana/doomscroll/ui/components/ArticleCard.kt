@@ -51,7 +51,6 @@ fun ArticleCard(
     article: ArticleEntity,
     onTap: () -> Unit,
     onToggleSave: () -> Unit,
-    onHide: () -> Unit,
     modifier: Modifier = Modifier,
     related: List<ArticleEntity> = emptyList(),
     expanded: Boolean = false,
@@ -176,13 +175,6 @@ fun ArticleCard(
                             onClick = {
                                 menuOpen = false
                                 onToggleSave()
-                            },
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.article_hide)) },
-                            onClick = {
-                                menuOpen = false
-                                onHide()
                             },
                         )
                         DropdownMenuItem(

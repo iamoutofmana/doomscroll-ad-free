@@ -319,6 +319,12 @@ FreshRSS/Miniflux sync · Mastodon sources · "news near me" geo feed · multi-w
     - [x] Tests: 105 passing
     - [ ] Before public release: signed release APK + MobSF pass; enable Dependabot alerts on repo; optional Jazzer fuzz of the feed parser
 - [x] **Branding decided (Nov 15, 2026): "Friendly Doom"** — plum `#1C1226` / cream `#FFF6E9` / coral `#FF5C7A` / lime `#C6FF4A`; doom-cloud adaptive icon (safe-zone checked, verified in app drawer); tagline "Same doom. No ads."; launcher label "Doomscroll", full name in store/README. Spec: `docs/branding/README.md`, board: `docs/branding/brand-board.html` (switched from Ink & Signal after live review); CI green (run 43762687623 — 1m45s)
+- [x] **UX round 4 (Nov 15, 2026):**
+    - [x] "Hide" removed from the card ⋮ menu (swipe-right is the only hide gesture); menu now Save / Share / Open in browser
+    - [x] In-app help: ⓘ in the feed top bar (and "Help" on the empty state) opens a "How to use Doomscroll" sheet — sources, reading, organizing, widget setup, privacy
+    - [x] Brand mark in-product: doom-cloud tile beside the title, in the empty state, and in the help header (icon and in-app logo share one vector); title shows "Doomscroll" without truncation
+    - [x] Top-bar decluttered: Info + Refresh icons, "Mark all read" and "Filtered (n)" moved to an overflow menu
+    - [x] Verified on device via screenshots (help sheet, brand sheet, top bar)
     - [ ] On-device widget visual pass (add via launcher, check taps/sizing on One UI) — user action
     - [ ] OPML import/export — next session
 - [ ] 3 days of daily driving without Samsung's media page → **Phase 1 DoD** (in progress — collecting annoyances for Phase 2)

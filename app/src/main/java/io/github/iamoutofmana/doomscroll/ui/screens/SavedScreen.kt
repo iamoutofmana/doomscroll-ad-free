@@ -75,9 +75,6 @@ fun SavedScreen(
                         onToggleSave = {
                             scope.launch { container.articleRepository.setSaved(article.id, false) }
                         },
-                        onHide = {
-                            scope.launch { container.articleRepository.hide(article.id) }
-                        },
                     )
                 }
             }

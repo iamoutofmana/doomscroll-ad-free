@@ -16,6 +16,7 @@
     <string name="action_refresh">Refresh</string>
     <string name="action_mark_all_read">Mark all read</string>
     <string name="action_filtered">Filtered (%1$d)</string>
+    <string name="action_more">More</string>
     <string name="action_delete">Delete</string>
     <string name="action_close">Close</string>
 
@@ -126,4 +127,16 @@
     <string name="rules_delete">Delete rule</string>
 
     <string name="article_open_browser">Open in browser</string>
+
+    <string name="help_open">Help</string>
+    <string name="help_sources_title">Add sources</string>
+    <string name="help_sources_body">Sources → Add source: pick Google News topics or searches, paste any RSS/Atom feed, or add YouTube channels, Reddit, Lemmy and Hacker News from the More sources tab.</string>
+    <string name="help_read_title">Reading</string>
+    <string name="help_read_body">Tap a story once to expand it (summary + other coverage). Tap again to read the full article in the app — text only, no ads. \"Original\" opens the publisher\'s page.</string>
+    <string name="help_organize_title">Organizing</string>
+    <string name="help_organize_body">Swipe a story right to hide it (Undo is offered). The ⋮ menu saves, shares, or opens the story in your browser. Sources → Filters hides stories by keyword or domain.</string>
+    <string name="help_widget_title">Home-screen widget</string>
+    <string name="help_widget_body">Long-press your home screen → Widgets → Doomscroll. The scrolling widget needs a launcher that supports scrollable widgets; the front-page widget fits One UI.</string>
+    <string name="help_privacy_title">Privacy</string>
+    <string name="help_privacy_body">No account, no ads, no tracking. Everything stays on your device, and the app only talks to the feeds you add.</string>
 </resources>

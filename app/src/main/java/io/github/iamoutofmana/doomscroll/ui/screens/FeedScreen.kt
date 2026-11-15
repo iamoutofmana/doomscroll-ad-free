@@ -6,19 +6,22 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -56,7 +59,9 @@ import io.github.iamoutofmana.doomscroll.data.repo.StoryClusterer
 import io.github.iamoutofmana.doomscroll.data.repo.prefetch
 import io.github.iamoutofmana.doomscroll.ui.LocalAppContainer
 import io.github.iamoutofmana.doomscroll.ui.components.ArticleCard
+import io.github.iamoutofmana.doomscroll.ui.components.BrandMark
 import io.github.iamoutofmana.doomscroll.ui.components.FilteredArticlesDialog
+import io.github.iamoutofmana.doomscroll.ui.components.HelpDialog
 import io.github.iamoutofmana.doomscroll.ui.components.rememberOpenArticle
 import io.github.iamoutofmana.doomscroll.widget.refreshFeedWidget
 import kotlinx.coroutines.flow.first
@@ -78,6 +83,8 @@ fun FeedScreen(
     val hidden by container.articleRepository.hidden.collectAsStateWithLifecycle(initialValue = emptyList())
     var refreshing by remember { mutableStateOf(false) }
     var showFiltered by remember { mutableStateOf(false) }
+    var showHelp by remember { mutableStateOf(false) }
+    var appMenuOpen by remember { mutableStateOf(false) }
     var expandedId by rememberSaveable { mutableStateOf<Long?>(null) }
     var previewLoading by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -150,17 +157,21 @@ fun FeedScreen(
         modifier = Modifier.padding(contentPadding),
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.app_name)) },
-                actions = {
-                    if (hidden.isNotEmpty()) {
-                        TextButton(onClick = { showFiltered = true }) {
-                            Text(stringResource(R.string.action_filtered, hidden.size))
-                        }
+                title = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        BrandMark(size = 26.dp)
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            text = stringResource(R.string.app_name_short),
+                            maxLines = 1,
+                        )
                     }
-                    IconButton(onClick = { scope.launch { container.articleRepository.markAllRead() } }) {
+                },
+                actions = {
+                    IconButton(onClick = { showHelp = true }) {
                         Icon(
-                            Icons.Default.Done,
-                            contentDescription = stringResource(R.string.action_mark_all_read),
+                            Icons.Default.Info,
+                            contentDescription = stringResource(R.string.help_open),
                         )
                     }
                     IconButton(onClick = { syncNow() }) {
@@ -169,13 +180,48 @@ fun FeedScreen(
                             contentDescription = stringResource(R.string.action_refresh),
                         )
                     }
+                    Box {
+                        IconButton(onClick = { appMenuOpen = true }) {
+                            Icon(
+                                Icons.Default.MoreVert,
+                                contentDescription = stringResource(R.string.action_more),
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = appMenuOpen,
+                            onDismissRequest = { appMenuOpen = false },
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.action_mark_all_read)) },
+                                onClick = {
+                                    appMenuOpen = false
+                                    scope.launch { container.articleRepository.markAllRead() }
+                                },
+                            )
+                            if (hidden.isNotEmpty()) {
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(stringResource(R.string.action_filtered, hidden.size))
+                                    },
+                                    onClick = {
+                                        appMenuOpen = false
+                                        showFiltered = true
+                                    },
+                                )
+                            }
+                        }
+                    }
                 },
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { innerPadding ->
         if (sources.isEmpty()) {
-            EmptyFeedPlaceholder(innerPadding, onOpenSources)
+            EmptyFeedPlaceholder(
+                contentPadding = innerPadding,
+                onOpenSources = onOpenSources,
+                onOpenHelp = { showHelp = true },
+            )
         } else {
             PullToRefreshBox(
                 isRefreshing = refreshing,
@@ -236,7 +282,6 @@ fun FeedScreen(
                                             )
                                         }
                                     },
-                                    onHide = { onHideWithUndo(group.primary.id) },
                                 )
                             }
                         }
@@ -253,6 +298,10 @@ fun FeedScreen(
             onUnhide = { id -> scope.launch { container.articleRepository.unhide(id) } },
             onUnhideAll = { scope.launch { container.articleRepository.unhideAll() } },
         )
+    }
+
+    if (showHelp) {
+        HelpDialog(onDismiss = { showHelp = false })
     }
 }
 
@@ -281,6 +330,7 @@ private fun SwipeHideBackground(state: SwipeToDismissBoxState) {
 private fun EmptyFeedPlaceholder(
     contentPadding: PaddingValues,
     onOpenSources: () -> Unit,
+    onOpenHelp: () -> Unit,
 ) {
     Box(
         modifier = Modifier
@@ -292,12 +342,7 @@ private fun EmptyFeedPlaceholder(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(32.dp),
         ) {
-            Icon(
-                Icons.Default.Add,
-                contentDescription = null,
-                modifier = Modifier.size(48.dp),
-                tint = MaterialTheme.colorScheme.primary,
-            )
+            BrandMark(size = 64.dp)
             Spacer(Modifier.height(16.dp))
             Text(stringResource(R.string.feed_empty_title), style = MaterialTheme.typography.titleLarge)
             Spacer(Modifier.height(8.dp))
@@ -310,6 +355,9 @@ private fun EmptyFeedPlaceholder(
             Spacer(Modifier.height(24.dp))
             Button(onClick = onOpenSources) {
                 Text(stringResource(R.string.feed_empty_cta))
+            }
+            TextButton(onClick = onOpenHelp) {
+                Text(stringResource(R.string.help_open))
             }
         }
     }
