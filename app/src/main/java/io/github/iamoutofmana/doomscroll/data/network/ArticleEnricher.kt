@@ -1,5 +1,6 @@
 package io.github.iamoutofmana.doomscroll.data.network
 
+import android.util.Log
 import io.github.iamoutofmana.doomscroll.domain.AppMetadata
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -33,10 +34,17 @@ class ArticleEnricher(
                 .header("Accept", "text/html,application/xhtml+xml")
                 .build()
             client.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) return@withContext null
+                if (!response.isSuccessful) {
+                    Log.d(LOG_TAG, "preview HTTP ${response.code} for $target")
+                    return@withContext null
+                }
                 val body = response.body?.string() ?: return@withContext null
                 val finalUrl = response.request.url.toString()
                 val preview = PreviewParser.parse(body, finalUrl)
+                Log.d(
+                    LOG_TAG,
+                    "preview ${finalUrl.take(120)} -> desc=${preview.description?.length ?: 0} chars, image=${preview.imageUrl != null}",
+                )
                 Enriched(
                     description = preview.description,
                     imageUrl = preview.imageUrl,
@@ -44,6 +52,7 @@ class ArticleEnricher(
                 )
             }
         } catch (e: Exception) {
+            Log.d(LOG_TAG, "preview failed for $articleLink: ${e.javaClass.simpleName}")
             null
         }
     }
@@ -55,5 +64,9 @@ class ArticleEnricher(
         if (!knownResolved.isNullOrBlank()) return knownResolved
         if (articleLink.contains("news.google.com")) return resolver.resolve(articleLink)
         return articleLink
+    }
+
+    private companion object {
+        const val LOG_TAG = "DoomscrollEnrich"
     }
 }

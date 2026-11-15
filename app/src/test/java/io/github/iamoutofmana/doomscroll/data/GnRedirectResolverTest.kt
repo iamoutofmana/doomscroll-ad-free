@@ -1,6 +1,11 @@
 package io.github.iamoutofmana.doomscroll.data
 
 import io.github.iamoutofmana.doomscroll.data.network.GnRedirectResolver
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.long
 import okhttp3.OkHttpClient
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -39,14 +44,41 @@ class GnRedirectResolverTest {
     }
 
     @Test
+    fun buildFreqUsesCurrentRpcAndEnvelope() {
+        val freq = resolver.buildFreq("CBMiTEST", "1794759515", "AdwtSYPwdNUyUTIzP")
+
+        // Structure: [[ envelope ]] where envelope = [rpcId, payloadJsonString, null, requestId]
+        val outer = Json.parseToJsonElement(freq).jsonArray
+        val envelope = outer[0].jsonArray[0].jsonArray
+        assertEquals("Fbv4je", envelope[0].jsonPrimitive.content)
+        assertEquals(JsonNull, envelope[2])
+        assertEquals("0", envelope[3].jsonPrimitive.content)
+
+        // Payload: ["garturlreq", <context>, articleId, timestamp(number), signature]
+        val payload = Json.parseToJsonElement(envelope[1].jsonPrimitive.content).jsonArray
+        assertEquals("garturlreq", payload[0].jsonPrimitive.content)
+        assertEquals("CBMiTEST", payload[2].jsonPrimitive.content)
+        assertEquals(1794759515L, payload[3].jsonPrimitive.long)
+        assertEquals("AdwtSYPwdNUyUTIzP", payload[4].jsonPrimitive.content)
+    }
+
+    @Test
     fun parsesBatchexecuteEnvelope() {
         val body = """)]}'
 
-[["wrb.fr","FbvAvj","[\"rbr0\",null,null,\"https://www.theverge.com/2026/11/13/example\"]",null,null,null,"generic"]]"""
+[["wrb.fr","Fbv4je","[\"garturlres\",\"https://www.engadget.com/2315452/motorola-signature-27-hands-on/\",null,null,[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,[true]]]",null,null,null,"0"]]"""
         assertEquals(
-            "https://www.theverge.com/2026/11/13/example",
+            "https://www.engadget.com/2315452/motorola-signature-27-hands-on/",
             resolver.parseBatchexecuteBody(body),
         )
+    }
+
+    @Test
+    fun toleratesTrailingMarkerRows() {
+        val body = """)]}'
+
+[["wrb.fr","Fbv4je","[\"garturlres\",\"https://example.com/story\",null]",null,null,null,"0"],["di",123],["e",456]]"""
+        assertEquals("https://example.com/story", resolver.parseBatchexecuteBody(body))
     }
 
     @Test
