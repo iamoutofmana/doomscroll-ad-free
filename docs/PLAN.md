@@ -303,7 +303,7 @@ FreshRSS/Miniflux sync · Mastodon sources · "news near me" geo feed · multi-w
     - [x] **Filter rules** (`RuleEngine`/`RuleRepository`/`FilterRulesDialog`): hide by keyword or domain — applied at ingest, retroactively on creation, and logged as "Rule: …" in the reviewable filtered list
     - [x] DB v2 with additive migration (reader cache columns + `rules` table) — existing articles/sources survive
     - [x] Article card menu gains "Open in browser"; second tap now opens in-app reader (no publisher ads)
-    - [x] Tests: 88 passing (added text extractor + rule engine suites)
+    - [x] Tests: 88 passing (added text extractor + rule engine suites); CI green (run 43736630176 — 2m35s)
     - [ ] Device verification: widget behavior on One UI, reader extraction against live publishers — pending phone
     - [ ] OPML import/export — next session
 - [ ] 3 days of daily driving without Samsung's media page → **Phase 1 DoD** (in progress — collecting annoyances for Phase 2)
