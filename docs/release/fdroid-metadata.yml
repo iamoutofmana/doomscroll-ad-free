@@ -1,0 +1,31 @@
+# F-Droid metadata draft — paste into a merge request against
+# https://gitlab.com/fdroid/fdroiddata (path: metadata/io.github.iamoutofmana.doomscroll.yml)
+# Submission guide: https://f-droid.org/en/docs/Submitting_to_F-Droid_Quick_Start_Guide/
+#
+# Note: F-Droid builds and signs with its own key. Users install either the
+# GitHub-release build or the F-Droid build — switching requires uninstall.
+
+Categories:
+  - News
+  - Reading
+License: GPL-3.0-or-later
+AuthorName: iamoutofmana
+SourceCode: https://github.com/iamoutofmana/doomscroll-ad-free
+IssueTracker: https://github.com/iamoutofmana/doomscroll-ad-free/issues
+Changelog: https://github.com/iamoutofmana/doomscroll-ad-free/releases
+
+RepoType: git
+Repo: https://github.com/iamoutofmana/doomscroll-ad-free.git
+
+Builds:
+  - versionName: 1.0.0
+    versionCode: 10
+    commit: v1.0.0
+    subdir: app
+    gradle:
+      - yes
+
+AutoUpdateMode: Version
+UpdateCheckMode: Tags
+CurrentVersion: 1.0.0
+CurrentVersionCode: 10

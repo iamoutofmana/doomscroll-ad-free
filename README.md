@@ -38,7 +38,12 @@ Full plan: [`docs/PLAN.md`](docs/PLAN.md)
 
 ## Install
 
-**Not released yet** (Phase 0 scaffold). To try the latest build: **Actions → Android CI → latest run → download the `doomscroll-ad-free-debug-apk` artifact** and sideload it (Android 8+). Stable releases will land on F-Droid and IzzyOnDroid at v1.0.
+**v1.0.0 is released.** Download the signed APK from
+[GitHub Releases](https://github.com/iamoutofmana/doomscroll-ad-free/releases) and sideload it
+(Android 8+). F-Droid submission is in progress.
+
+> **Signing note:** GitHub builds are signed with the project key; F-Droid builds use
+> F-Droid's key. Pick one distribution and stick with it — switching requires uninstalling.
 
 ### Replacing your media page (once the widget ships — Phase 2)
 

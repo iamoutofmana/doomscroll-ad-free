@@ -1,0 +1,14 @@
+Doomscroll Ad Free is an ad-free, open-source replacement for your phone's media page.
+
+Add the sources you actually read — Google News topics and keyword searches, any RSS/Atom feed, YouTube channels, Reddit, Lemmy and Hacker News — and get one clean, scrolling feed with no ads, no sponsored items, and no tracking.
+
+Features:
+- Google News topics, local feeds and keyword searches with operators (intitle:, site:, OR, when:7d)
+- Any RSS/Atom/JSON feed, YouTube channels, podcasts, Reddit, Lemmy, Hacker News
+- Reader mode: article text extracted in-app, no publisher ads, adjustable type size
+- Home-screen widget: scrolling feed (launchers that support scrollable widgets) or a fit-to-page front page
+- Swipe right to hide a story, with Undo; hide rules by keyword or domain
+- Similar stories grouped into one card with "Also covered by"
+- Everything is local: no account, no telemetry, network calls only to feeds you add
+
+The app is GPL-3.0 licensed. Source code: https://github.com/iamoutofmana/doomscroll-ad-free

@@ -1,0 +1,7 @@
+First public release.
+
+- Ad-free feed reader: Google News topics/searches, RSS/Atom, YouTube, Reddit, Lemmy, Hacker News
+- In-app reader mode with font controls
+- Home-screen widgets: scrolling feed + fit-to-page front page
+- Swipe-right to hide (with Undo), keyword/domain filters, story grouping
+- No account, no ads, no tracking; all data stays on device
