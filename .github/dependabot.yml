@@ -1,0 +1,15 @@
+version: 2
+updates:
+  # Keep Gradle dependencies patched (security alerts arrive via GitHub too).
+  - package-ecosystem: gradle
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+
+  # Keep CI actions current.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5

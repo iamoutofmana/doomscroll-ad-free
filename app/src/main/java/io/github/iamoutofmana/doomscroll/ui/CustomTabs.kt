@@ -5,9 +5,12 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.browser.customtabs.CustomTabsIntent
+import io.github.iamoutofmana.doomscroll.domain.links.UrlSafety
 
 /** Opens articles in Custom Tabs; falls back to a plain VIEW intent if none is available. */
 fun Context.openInCustomTab(url: String) {
+    // Never hand arbitrary schemes (javascript:, intent:, file:, ...) to the browser.
+    if (!UrlSafety.isOpenableWebUrl(url)) return
     val uri = Uri.parse(url)
     try {
         CustomTabsIntent.Builder().build().launchUrl(this, uri)

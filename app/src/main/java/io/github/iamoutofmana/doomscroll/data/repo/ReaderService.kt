@@ -3,7 +3,9 @@ package io.github.iamoutofmana.doomscroll.data.repo
 import io.github.iamoutofmana.doomscroll.data.db.ArticleEntity
 import io.github.iamoutofmana.doomscroll.data.network.ArticleTextExtractor
 import io.github.iamoutofmana.doomscroll.data.network.GnRedirectResolver
+import io.github.iamoutofmana.doomscroll.data.network.HttpBodies
 import io.github.iamoutofmana.doomscroll.domain.AppMetadata
+import io.github.iamoutofmana.doomscroll.domain.links.UrlSafety
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -41,6 +43,9 @@ class ReaderService(
 
         val target = resolveTarget(article)
             ?: return Result.Failed(article, "Couldn't resolve this article's link")
+        if (!UrlSafety.isSafeArticleUrl(target)) {
+            return Result.Failed(article, "Blocked an unsafe article link")
+        }
 
         return try {
             val html = withContext(Dispatchers.IO) { fetchHtml(target) }
@@ -72,7 +77,13 @@ class ReaderService(
             .header("Accept", "text/html,application/xhtml+xml")
             .build()
         return client.newCall(request).execute().use { response ->
-            if (response.isSuccessful) response.body?.string() else null
+            if (!response.isSuccessful) return null
+            val body = response.body ?: return null
+            HttpBodies.readCapped(body, MAX_ARTICLE_BYTES)?.let { String(it) }
         }
+    }
+
+    private companion object {
+        const val MAX_ARTICLE_BYTES = 2 * 1024 * 1024
     }
 }

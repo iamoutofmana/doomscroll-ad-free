@@ -17,6 +17,8 @@ object XmlFeedParser {
 
     fun parse(text: String): ParsedFeed {
         val parser = XmlPullParserFactory.newInstance().newPullParser()
+        // Defense in depth: never process DTDs (XXE / entity-expansion bombs).
+        runCatching { parser.setFeature(XmlPullParser.FEATURE_PROCESS_DOCDECL, false) }
         parser.setInput(StringReader(text))
         var eventType = parser.eventType
         while (eventType != XmlPullParser.START_TAG && eventType != XmlPullParser.END_DOCUMENT) {

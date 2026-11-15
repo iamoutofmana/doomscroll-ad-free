@@ -1,6 +1,7 @@
 package io.github.iamoutofmana.doomscroll.data.network
 
 import android.util.Log
+import io.github.iamoutofmana.doomscroll.BuildConfig
 import io.github.iamoutofmana.doomscroll.domain.AppMetadata
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -217,10 +218,10 @@ class GnRedirectResolver(private val client: OkHttpClient) {
             } ?: return@withContext null
 
             parseBatchexecuteBody(response).also { url ->
-                Log.d(LOG_TAG, "GN redirect $articleId -> ${url ?: "UNRESOLVED"}")
+                if (BuildConfig.DEBUG) Log.d(LOG_TAG, "GN redirect $articleId -> ${url ?: "UNRESOLVED"}")
             }
         } catch (e: Exception) {
-            Log.d(LOG_TAG, "GN redirect $articleId failed: ${e.javaClass.simpleName}")
+            if (BuildConfig.DEBUG) Log.d(LOG_TAG, "GN redirect $articleId failed: ${e.javaClass.simpleName}")
             null
         }
     }

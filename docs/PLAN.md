@@ -308,6 +308,16 @@ FreshRSS/Miniflux sync · Mastodon sources · "news near me" geo feed · multi-w
     - [x] Reader extraction hardened from device findings: paragraphs-only, repeated-headline/byline/related-link filtering; extraction-cache versioning auto-invalidates stale text; CI green (run 43751108726 — 1m50s)
     - [x] **Widget fits rows to host size (Nov 15, One UI finding):** Samsung's launcher does not deliver scroll gestures to widgets, so scrollable lists always looked "partial". Widget now uses `SizeMode.Exact` + `LocalSize` to render exactly the rows that fit (no clipped row, auto-adjusts on resize); refreshes on app launch too — verified via screenshot; CI green (run 43751927947 — 1m41s)
     - [x] **Two widget variants (Nov 15):** `FeedWidget` = fit-to-host "front page" (One UI-friendly, footer "More in the app →"); `ScrollingFeedWidget` = full 24-item root-`LazyColumn` list that scrolls on launchers supporting scrollable collection widgets (Nova, Kvaesitso, Lawnchair, Pixel). One UI clips the scrolling variant — launcher limitation, confirmed via research + on-device swipe test (swipe on widget opens the app drawer); CI green (run 43752439583 — 2m2s)
+- [x] **Pre-release security review (Nov 15, 2026):**
+    - [x] Threat model: untrusted feed/article content is the only hostile input (no WebView, no accounts, no server, plain-text rendering only)
+    - [x] **URL allow-listing** (`UrlSafety`): article links must be https; loopback/private/link-local/.local hosts blocked (lite-SSRF); Custom Tabs + share + image URLs limited to web schemes — with tests
+    - [x] **Feed parser hardening:** DTD processing explicitly disabled (XXE / entity-expansion bombs); tests for external entities, bounded expansion, truncated XML, binary garbage
+    - [x] **Response caps:** feeds 5 MB, article pages 2 MB (`HttpBodies.readCapped`); MockWebServer TLS tests for 304/ETag, oversize rejection, cleartext refusal, HTTP errors
+    - [x] **Release logging guarded** behind `BuildConfig.DEBUG`; explicit cleartext-ban network security config
+    - [x] **Release Lint:** no security findings; **manifest audit:** only required exported components (launcher activity, 2 widget receivers, WorkManager/Glance system-permission components); permissions = INTERNET + WorkManager internals
+    - [x] Dependabot configured for Gradle + GitHub Actions
+    - [x] Tests: 105 passing
+    - [ ] Before public release: signed release APK + MobSF pass; enable Dependabot alerts on repo; optional Jazzer fuzz of the feed parser
     - [ ] On-device widget visual pass (add via launcher, check taps/sizing on One UI) — user action
     - [ ] OPML import/export — next session
 - [ ] 3 days of daily driving without Samsung's media page → **Phase 1 DoD** (in progress — collecting annoyances for Phase 2)

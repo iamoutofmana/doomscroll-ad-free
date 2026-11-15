@@ -1,7 +1,9 @@
 package io.github.iamoutofmana.doomscroll.data.network
 
 import android.util.Log
+import io.github.iamoutofmana.doomscroll.BuildConfig
 import io.github.iamoutofmana.doomscroll.domain.AppMetadata
+import io.github.iamoutofmana.doomscroll.domain.links.UrlSafety
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -28,6 +30,10 @@ class ArticleEnricher(
     ): Enriched? = withContext(Dispatchers.IO) {
         try {
             val target = resolveTarget(articleLink, knownResolved) ?: return@withContext null
+            if (!UrlSafety.isSafeArticleUrl(target)) {
+                logDebug("blocked unsafe article URL: ${target.take(120)}")
+                return@withContext null
+            }
             val request = Request.Builder()
                 .url(target)
                 .header("User-Agent", AppMetadata.BROWSER_UA)
@@ -35,14 +41,14 @@ class ArticleEnricher(
                 .build()
             client.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) {
-                    Log.d(LOG_TAG, "preview HTTP ${response.code} for $target")
+                    logDebug("preview HTTP ${response.code} for ${target.take(120)}")
                     return@withContext null
                 }
-                val body = response.body?.string() ?: return@withContext null
+                val body = response.body ?: return@withContext null
+                val bytes = HttpBodies.readCapped(body, MAX_ARTICLE_BYTES) ?: return@withContext null
                 val finalUrl = response.request.url.toString()
-                val preview = PreviewParser.parse(body, finalUrl)
-                Log.d(
-                    LOG_TAG,
+                val preview = PreviewParser.parse(String(bytes), finalUrl)
+                logDebug(
                     "preview ${finalUrl.take(120)} -> desc=${preview.description?.length ?: 0} chars, image=${preview.imageUrl != null}",
                 )
                 Enriched(
@@ -52,9 +58,13 @@ class ArticleEnricher(
                 )
             }
         } catch (e: Exception) {
-            Log.d(LOG_TAG, "preview failed for $articleLink: ${e.javaClass.simpleName}")
+            logDebug("preview failed for ${articleLink.take(120)}: ${e.javaClass.simpleName}")
             null
         }
+    }
+
+    private fun logDebug(message: String) {
+        if (BuildConfig.DEBUG) Log.d(LOG_TAG, message)
     }
 
     private suspend fun resolveTarget(
@@ -68,5 +78,6 @@ class ArticleEnricher(
 
     private companion object {
         const val LOG_TAG = "DoomscrollEnrich"
+        const val MAX_ARTICLE_BYTES = 2 * 1024 * 1024
     }
 }

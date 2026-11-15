@@ -41,15 +41,20 @@ class FeedFetcher(private val client: OkHttpClient) {
                 when {
                     response.code == 304 -> Result.NotModified
                     response.code in 200..299 -> {
-                        val bytes = response.body?.bytes() ?: ByteArray(0)
-                        if (bytes.isEmpty()) {
+                        val body = response.body
+                        if (body == null) {
                             Result.Failure("Empty response body")
                         } else {
-                            Result.Content(
-                                body = decode(bytes, response.header("Content-Type")),
-                                etag = response.header("ETag"),
-                                lastModified = response.header("Last-Modified"),
-                            )
+                            val bytes = HttpBodies.readCapped(body, MAX_FEED_BYTES)
+                            if (bytes == null || bytes.isEmpty()) {
+                                Result.Failure("Feed too large or empty (cap $MAX_FEED_BYTES bytes)")
+                            } else {
+                                Result.Content(
+                                    body = decode(bytes, response.header("Content-Type")),
+                                    etag = response.header("ETag"),
+                                    lastModified = response.header("Last-Modified"),
+                                )
+                            }
                         }
                     }
                     else -> Result.Failure("HTTP ${response.code}")
@@ -81,6 +86,7 @@ class FeedFetcher(private val client: OkHttpClient) {
     }
 
     private companion object {
+        const val MAX_FEED_BYTES = 5 * 1024 * 1024
         val CHARSET_PARAM = Regex("""charset\s*=\s*"?([A-Za-z0-9_\-:.]+)"?""", RegexOption.IGNORE_CASE)
     }
 }
