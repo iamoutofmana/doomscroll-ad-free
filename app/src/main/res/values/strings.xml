@@ -102,8 +102,10 @@
     <string name="related_count">%1$d related</string>
 
     <string name="widget_label">Doomscroll Ad Free — feed</string>
+    <string name="widget_label_scrolling">Doomscroll — scrolling feed</string>
     <string name="widget_header">Doomscroll Ad Free</string>
     <string name="widget_empty">Add sources in the app to fill this widget.</string>
+    <string name="widget_more">More in the app →</string>
 
     <string name="reader_loading">Extracting article…</string>
     <string name="reader_failed">Couldn\'t extract this article</string>

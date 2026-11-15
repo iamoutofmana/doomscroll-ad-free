@@ -37,95 +37,132 @@ import io.github.iamoutofmana.doomscroll.R
 import io.github.iamoutofmana.doomscroll.data.db.ArticleEntity
 import io.github.iamoutofmana.doomscroll.domain.time.TimeText
 
-/**
- * The media-page replacement (Phase 2): a scrollable feed widget for the home screen.
- * Reads the local DB at render time and is re-rendered after every sync.
- * Taps deep-link straight into reader mode.
+/*
+ * Two widget variants (Phase 2):
+ *
+ * 1. FeedWidget — "front page": exactly the rows that fit the host, no clipping.
+ *    Optimized for Samsung One UI, whose launcher does not deliver scroll gestures
+ *    to third-party widgets (it shows a fixed window of the list).
+ *
+ * 2. ScrollingFeedWidget — full list in a root-level LazyColumn. Scrolls on launchers
+ *    that support scrollable collection widgets (Nova, Kvaesitso, Lawnchair, Pixel
+ *    Launcher) and clips to its viewport on One UI.
+ *
+ * Both share the same row rendering; taps deep-link into reader mode.
  */
+
 class FeedWidget : GlanceAppWidget() {
-    // Exact sizing makes LocalSize return real dimensions, so we can fit rows without clipping.
     override val sizeMode: SizeMode = SizeMode.Exact
 
     override suspend fun provideGlance(
         context: Context,
         id: GlanceId,
     ) {
-        val container = (context.applicationContext as DoomscrollApplication).container
-        val articles = runCatching {
-            container.articleRepository.latestForWidget(WIDGET_LIMIT)
-        }.getOrDefault(emptyList())
-        val header = context.getString(R.string.widget_header)
-        val emptyText = context.getString(R.string.widget_empty)
-        val openAppIntent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-        }
+        val data = loadWidgetData(context)
         provideContent {
-            WidgetContent(
-                articles = articles,
-                header = header,
-                emptyText = emptyText,
-                openAppIntent = openAppIntent,
-            )
+            WidgetList(data = data, fitToHost = true)
         }
     }
 }
 
-@Composable
-private fun WidgetContent(
-    articles: List<ArticleEntity>,
-    header: String,
-    emptyText: String,
-    openAppIntent: Intent,
-) {
-    // Samsung's One UI (and some other launchers) do not deliver scroll gestures to
-    // widgets. Fit the rows that actually fit the host's height so nothing is clipped
-    // mid-row, instead of relying on scrolling.
-    val widgetHeight = LocalSize.current.height
-    val visible = articles.take(rowsThatFit(widgetHeight))
+class ScrollingFeedWidget : GlanceAppWidget() {
+    override val sizeMode: SizeMode = SizeMode.Exact
 
-    Column(
+    override suspend fun provideGlance(
+        context: Context,
+        id: GlanceId,
+    ) {
+        val data = loadWidgetData(context)
+        provideContent {
+            WidgetList(data = data, fitToHost = false)
+        }
+    }
+}
+
+private data class WidgetData(
+    val articles: List<ArticleEntity>,
+    val header: String,
+    val emptyText: String,
+    val moreText: String,
+    val openAppIntent: Intent,
+)
+
+private suspend fun loadWidgetData(context: Context): WidgetData {
+    val container = (context.applicationContext as DoomscrollApplication).container
+    val articles = runCatching {
+        container.articleRepository.latestForWidget(WIDGET_LIMIT)
+    }.getOrDefault(emptyList())
+    val openAppIntent = Intent(context, MainActivity::class.java).apply {
+        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+    }
+    return WidgetData(
+        articles = articles,
+        header = context.getString(R.string.widget_header),
+        emptyText = context.getString(R.string.widget_empty),
+        moreText = context.getString(R.string.widget_more),
+        openAppIntent = openAppIntent,
+    )
+}
+
+@Composable
+private fun WidgetList(
+    data: WidgetData,
+    fitToHost: Boolean,
+) {
+    val height = LocalSize.current.height
+    val visible = if (fitToHost) {
+        data.articles.take(rowsThatFit(height))
+    } else {
+        data.articles
+    }
+
+    LazyColumn(
         modifier = GlanceModifier
             .fillMaxSize()
             .background(ColorProvider(BACKGROUND))
             .padding(12.dp),
     ) {
-        Row(
-            modifier = GlanceModifier
-                .fillMaxWidth()
-                .clickable(actionStartActivity(openAppIntent)),
-            verticalAlignment = Alignment.Vertical.CenterVertically,
-        ) {
-            Text(
-                text = header,
-                style = TextStyle(
-                    color = ColorProvider(FOREGROUND),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                ),
-            )
+        item {
+            Row(
+                modifier = GlanceModifier
+                    .fillMaxWidth()
+                    .clickable(actionStartActivity(data.openAppIntent)),
+                verticalAlignment = Alignment.Vertical.CenterVertically,
+            ) {
+                Text(
+                    text = data.header,
+                    style = TextStyle(
+                        color = ColorProvider(FOREGROUND),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                    ),
+                )
+            }
+            Spacer(GlanceModifier.height(8.dp))
         }
-        Spacer(GlanceModifier.height(8.dp))
-        if (visible.isEmpty()) {
-            Text(
-                text = emptyText,
-                style = TextStyle(color = ColorProvider(DIM), fontSize = 13.sp),
-            )
+        if (data.articles.isEmpty()) {
+            item {
+                Text(
+                    text = data.emptyText,
+                    style = TextStyle(color = ColorProvider(DIM), fontSize = 13.sp),
+                )
+            }
         } else {
-            LazyColumn(modifier = GlanceModifier.fillMaxSize()) {
-                items(visible) { article ->
-                    WidgetArticleRow(article)
-                }
+            items(visible) { article ->
+                WidgetArticleRow(article)
+            }
+            item {
+                Text(
+                    text = data.moreText,
+                    style = TextStyle(color = ColorProvider(DIM), fontSize = 11.sp),
+                    modifier = GlanceModifier
+                        .fillMaxWidth()
+                        .clickable(actionStartActivity(data.openAppIntent))
+                        .padding(top = 6.dp, bottom = 2.dp),
+                )
             }
         }
     }
-}
-
-/** Conservative row estimate: header + padding ≈ 44dp, a 2-line headline row ≈ 62dp. */
-private fun rowsThatFit(height: Dp): Int {
-    val available = height.value - HEADER_BLOCK_DP
-    if (available <= 0f) return 1
-    val rows = (available / ROW_HEIGHT_DP).toInt()
-    return rows.coerceIn(1, WIDGET_LIMIT)
 }
 
 @Composable
@@ -160,12 +197,27 @@ private fun WidgetArticleRow(article: ArticleEntity) {
     }
 }
 
+/**
+ * Rows that fit the host height for the static variant: header+padding ≈ 44dp, footer ≈ 24dp,
+ * a two-line headline row ≈ 62dp. Conservative on purpose so no row ever renders half-cut.
+ */
+private fun rowsThatFit(height: Dp): Int {
+    val available = height.value - HEADER_BLOCK_DP - FOOTER_BLOCK_DP
+    if (available <= 0f) return 1
+    return ((available / ROW_HEIGHT_DP).toInt()).coerceIn(1, WIDGET_LIMIT)
+}
+
 class FeedWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = FeedWidget()
 }
 
-private const val WIDGET_LIMIT = 12
+class ScrollingFeedWidgetReceiver : GlanceAppWidgetReceiver() {
+    override val glanceAppWidget: GlanceAppWidget = ScrollingFeedWidget()
+}
+
+private const val WIDGET_LIMIT = 24
 private const val HEADER_BLOCK_DP = 44f
+private const val FOOTER_BLOCK_DP = 24f
 private const val ROW_HEIGHT_DP = 62f
 private val BACKGROUND = Color(0xFF10151A)
 private val FOREGROUND = Color(0xFFE9EEF2)

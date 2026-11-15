@@ -33,7 +33,8 @@ class OpenArticleAction : ActionCallback {
     }
 }
 
-/** Re-renders the widget after a sync so it never shows stale headlines. */
+/** Re-renders both widget variants after a sync so they never show stale headlines. */
 suspend fun refreshFeedWidget(context: Context) {
     runCatching { FeedWidget().updateAll(context) }
+    runCatching { ScrollingFeedWidget().updateAll(context) }
 }
