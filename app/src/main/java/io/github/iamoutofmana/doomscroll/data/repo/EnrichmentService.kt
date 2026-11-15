@@ -51,3 +51,20 @@ class EnrichmentService(
         const val ATTEMPT_COOLDOWN_MS = 10L * 60L * 1000L
     }
 }
+
+/**
+ * Prefetches previews for the top of the feed after a sync so the visible cards gain
+ * hero images and summaries without a tap (user feedback: "I want to see pictures").
+ * Sequential and capped — a background nicety, never a sync blocker.
+ */
+suspend fun EnrichmentService.prefetch(
+    groups: List<io.github.iamoutofmana.doomscroll.data.repo.StoryClusterer.StoryGroup>,
+    limit: Int = 6,
+) {
+    groups
+        .asSequence()
+        .flatMap { sequenceOf(it.primary) + it.related.asSequence() }
+        .filter { it.summary.isNullOrBlank() || it.imageUrl.isNullOrBlank() }
+        .take(limit)
+        .forEach { ensurePreview(it) }
+}

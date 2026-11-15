@@ -53,10 +53,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.iamoutofmana.doomscroll.R
 import io.github.iamoutofmana.doomscroll.data.repo.StoryClusterer
+import io.github.iamoutofmana.doomscroll.data.repo.prefetch
 import io.github.iamoutofmana.doomscroll.ui.LocalAppContainer
 import io.github.iamoutofmana.doomscroll.ui.components.ArticleCard
 import io.github.iamoutofmana.doomscroll.ui.components.FilteredArticlesDialog
 import io.github.iamoutofmana.doomscroll.ui.components.rememberOpenArticle
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 private const val AUTO_SYNC_STALE_MS = 15 * 60_000L
@@ -91,6 +93,10 @@ fun FeedScreen(
                 else -> context.getString(R.string.synced_up_to_date)
             }
             snackbarHostState.showSnackbar(msg)
+            // Warm previews for the top of the feed so images/summaries appear without a tap.
+            runCatching {
+                container.enrichment.prefetch(container.articleRepository.feed.first())
+            }
         }
     }
 
@@ -130,7 +136,9 @@ fun FeedScreen(
     }
 
     // Silent auto-sync when the app is opened with stale data (plan Appendix B).
-    LaunchedEffect(Unit) {
+    // Keyed on sources: the flow emits empty on first composition, so a one-shot
+    // LaunchedEffect(Unit) would always miss the initial sync.
+    LaunchedEffect(sources.isNotEmpty()) {
         val stale = System.currentTimeMillis() - container.lastAutoSyncAt > AUTO_SYNC_STALE_MS
         if (sources.isNotEmpty() && stale) syncNow()
     }

@@ -290,6 +290,13 @@ FreshRSS/Miniflux sync · Mastodon sources · "news near me" geo feed · multi-w
     - [x] Old short summaries auto-upgrade on next expand (only replaced when meaningfully longer)
     - [x] Smoother swipe: hide fires **after** the dismiss animation completes, dismissed rows aren't re-grabbable, list reflow animated (`animateItem()`)
     - [x] Tests: 76 passing; CI green (run 43734319164 — 1m24s)
+- [x] **Phase 1.8 — enrichment root-cause fix (Nov 15, 2026):**
+    - [x] **Root cause found with live experiments:** Google News `/rss/articles/<id>` returns a JS shell (HTTP 200), never a redirect; resolution requires Google's batchexecute endpoint. Google changed the RPC id (`FbvAvj` → `Fbv4je`) and request envelope (`garturlreq`), so our resolver was silently failing every link (old POST → HTTP 400; verified against the maintained `googlenewsdecoder` implementation, which decoded a live link successfully)
+    - [x] Resolver ported to the current algorithm (`buildFreq`/`parseBatchexecuteBody`, locale-param page URL, marker-row tolerance); verified on-device: GN link → NBC News URL → `desc=600 chars, image=true`
+    - [x] Enrichment diagnostics: `DoomscrollGn` / `DoomscrollEnrich` logcat tags (resolution target, extraction length, failures)
+    - [x] Preview **prefetch**: after each sync, top ~6 feed items are warmed so hero images/summaries appear without tapping
+    - [x] Bug fix: auto-sync-on-open never fired (one-shot LaunchedEffect saw an empty source flow) — now keyed on source presence
+    - [x] Tests: 78 passing; CI green (run 43734964275 — resolver fix)
 - [ ] 3 days of daily driving without Samsung's media page → **Phase 1 DoD** (in progress — collecting annoyances for Phase 2)
 
 ---
