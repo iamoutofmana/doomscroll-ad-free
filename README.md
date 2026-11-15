@@ -24,6 +24,16 @@ Started because the Samsung media page shows ads and there is no way to replace 
 | On-device "For You" ranking | 4 |
 | First stable release (F-Droid, IzzyOnDroid) | 5 |
 
+## Screenshots
+
+| Feed | Reader mode |
+|---|---|
+| ![Feed](docs/screenshots/feed.png) | ![Reader](docs/screenshots/reader.png) |
+
+| Home-screen widget | In-app help |
+|---|---|
+| ![Widget](docs/screenshots/widget.png) | ![Help](docs/screenshots/help.png) |
+
 Full plan: [`docs/PLAN.md`](docs/PLAN.md)
 
 ## Install

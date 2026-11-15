@@ -12,6 +12,7 @@ captures/
 
 # Local configuration (SDK paths, signing keys)
 local.properties
+keystore.properties
 *.keystore
 *.jks
 

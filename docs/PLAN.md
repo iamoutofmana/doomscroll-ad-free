@@ -325,6 +325,14 @@ FreshRSS/Miniflux sync · Mastodon sources · "news near me" geo feed · multi-w
     - [x] Brand mark in-product: doom-cloud tile beside the title, in the empty state, and in the help header (icon and in-app logo share one vector); title shows "Doomscroll" without truncation
     - [x] Top-bar decluttered: Info + Refresh icons, "Mark all read" and "Filtered (n)" moved to an overflow menu
     - [x] Verified on device via screenshots (help sheet, brand sheet, top bar)
+- [x] **Release pass (Nov 15, 2026):**
+    - [x] Release keystore generated (4096-bit RSA, 10,000 days, alias `doomscroll`) — stored outside the repo at `doomscroll-release/` with backup instructions; `keystore.properties` gitignored
+    - [x] Gradle release signing config wired (auto-loads `keystore.properties`); version bumped to **1.0.0 (versionCode 10)**
+    - [x] Release APK built: **2.78 MB** (R8 minified, from 9.4 MB debug); signature verified (SHA-256 `b4f9521d…`)
+    - [x] `mobsfscan` source scan: **0 Android issues**
+    - [x] README screenshots added (feed, reader, widget, help)
+    - [ ] Install release build on device (requires uninstall of debug build — data reset, pending user approval)
+    - [ ] F-Droid + IzzyOnDroid metadata; v1.0.0 tag + GitHub Release
     - [ ] On-device widget visual pass (add via launcher, check taps/sizing on One UI) — user action
     - [ ] OPML import/export — next session
 - [ ] 3 days of daily driving without Samsung's media page → **Phase 1 DoD** (in progress — collecting annoyances for Phase 2)
