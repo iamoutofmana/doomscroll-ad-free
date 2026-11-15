@@ -284,7 +284,7 @@ FreshRSS/Miniflux sync · Mastodon sources · "news near me" geo feed · multi-w
     - [x] ⋮ pinned to the card's right edge (no overlay, no movement with title length)
     - [x] Story grouping: near-duplicate headlines cluster into one card with "Also covered by" list (title-similarity ≥ 0.5, 48h window)
     - [x] Hidden-story memory: hidden titles skipped at ingest for 30 days — hidden stories never reappear
-    - [x] Tests: 74 passing
+    - [x] Tests: 74 passing; CI green (run 43733586963 — 2m37s)
 - [ ] 3 days of daily driving without Samsung's media page → **Phase 1 DoD** (in progress — collecting annoyances for Phase 2)
 
 ---
