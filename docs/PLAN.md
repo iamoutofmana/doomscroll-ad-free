@@ -335,7 +335,9 @@ FreshRSS/Miniflux sync · Mastodon sources · "news near me" geo feed · multi-w
     - [x] **Release 1.0.0 installed on device (Nov 15)** — old debug data reset as expected; fresh install, sources added through UI, sync + feed verified under R8; zero crashes
     - [x] **GitHub Release v1.0.0 published** — signed APK attached (SHA-256 `58B5365A…`), release notes with signing guidance; README install section updated
     - [x] F-Droid/IzzyOnDroid ready: fastlane metadata (title, short/full description, changelog 10, 4 phone screenshots) + recipe draft at `docs/release/fdroid-metadata.yml`
-    - [ ] Submit to F-Droid (fdroiddata MR — requires the maintainer's GitLab account) and IzzyOnDroid (repo issue)
+    - [x] **F-Droid build path validated:** release builds unsigned when `keystore.properties` is absent (exactly what the buildserver does) — `app-release-unsigned.apk` produced successfully
+    - [x] Submission walkthrough written: `docs/release/fdroid-submission.md` (GitLab MR steps, likely reviewer requests, IzzyOnDroid lane)
+    - [ ] Submit fdroiddata MR (requires the maintainer's GitLab account)
     - [ ] Optional: Play Store track; signatures differ per distribution (uninstall to switch)
     - [ ] On-device widget visual pass (add via launcher, check taps/sizing on One UI) — user action
     - [ ] OPML import/export — next session
