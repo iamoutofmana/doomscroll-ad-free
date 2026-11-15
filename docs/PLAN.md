@@ -296,7 +296,7 @@ FreshRSS/Miniflux sync · Mastodon sources · "news near me" geo feed · multi-w
     - [x] Enrichment diagnostics: `DoomscrollGn` / `DoomscrollEnrich` logcat tags (resolution target, extraction length, failures)
     - [x] Preview **prefetch**: after each sync, top ~6 feed items are warmed so hero images/summaries appear without tapping
     - [x] Bug fix: auto-sync-on-open never fired (one-shot LaunchedEffect saw an empty source flow) — now keyed on source presence
-    - [x] Tests: 78 passing; CI green (run 43734964275 — resolver fix)
+    - [x] Tests: 78 passing; CI green (run 43734964275 — resolver fix; run 43735633898 — prefetch + auto-sync, 1m37s)
 - [ ] 3 days of daily driving without Samsung's media page → **Phase 1 DoD** (in progress — collecting annoyances for Phase 2)
 
 ---
