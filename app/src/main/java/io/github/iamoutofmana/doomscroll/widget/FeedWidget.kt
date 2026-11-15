@@ -220,5 +220,5 @@ private const val HEADER_BLOCK_DP = 44f
 private const val FOOTER_BLOCK_DP = 24f
 private const val ROW_HEIGHT_DP = 62f
 private val BACKGROUND = Color(0xFF10151A)
-private val FOREGROUND = Color(0xFFE9EEF2)
+private val FOREGROUND = Color(0xFFF4F1EA)
 private val DIM = Color(0xFF9AA5AE)

@@ -1,17 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Ink & Signal app icon (adaptive foreground).
+  Three feed lines: two in paper, one in signal orange — the story you care about.
+  Bars are stroked lines with round caps (spans x≈26.5..81.5, inside the 66dp safe zone).
+  Monochrome gets tinted by the system; multi-color collapses to its alpha mask.
+-->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Placeholder "feed list" glyph — final branding pass lands in Phase 5. -->
     <path
-        android:fillColor="#E9EEF2"
-        android:pathData="M30,38 h48 v8 h-48 z" />
+        android:fillColor="#00000000"
+        android:strokeColor="#F4F1EA"
+        android:strokeWidth="9"
+        android:strokeLineCap="round"
+        android:pathData="M31,40.5 L77,40.5" />
     <path
-        android:fillColor="#FF6A3D"
-        android:pathData="M30,52 h48 v8 h-48 z" />
+        android:fillColor="#00000000"
+        android:strokeColor="#F4F1EA"
+        android:strokeWidth="9"
+        android:strokeLineCap="round"
+        android:pathData="M31,54 L77,54" />
     <path
-        android:fillColor="#E9EEF2"
-        android:pathData="M30,66 h36 v8 h-36 z" />
+        android:fillColor="#00000000"
+        android:strokeColor="#FF6A3D"
+        android:strokeWidth="9"
+        android:strokeLineCap="round"
+        android:pathData="M31,67.5 L68,67.5" />
 </vector>

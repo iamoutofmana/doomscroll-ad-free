@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Doomscroll Ad Free</string>
+    <string name="app_name_short">Doomscroll</string>
     <string name="tagline">Your feeds. Zero ads. Zero tracking.</string>
 
     <string name="tab_feed">Feed</string>

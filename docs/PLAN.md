@@ -318,6 +318,7 @@ FreshRSS/Miniflux sync · Mastodon sources · "news near me" geo feed · multi-w
     - [x] Dependabot configured for Gradle + GitHub Actions
     - [x] Tests: 105 passing
     - [ ] Before public release: signed release APK + MobSF pass; enable Dependabot alerts on repo; optional Jazzer fuzz of the feed parser
+- [x] **Branding decided (Nov 15, 2026): "Ink & Signal"** — ink `#10151A` / paper `#F4F1EA` / signal `#FF6A3D` / slate `#5B6770`; feed-lines adaptive icon; tagline "Your feeds. Zero ads."; launcher label "Doomscroll", full name in store/README. Spec: `docs/branding/README.md`, board: `docs/branding/brand-board.html`
     - [ ] On-device widget visual pass (add via launcher, check taps/sizing on One UI) — user action
     - [ ] OPML import/export — next session
 - [ ] 3 days of daily driving without Samsung's media page → **Phase 1 DoD** (in progress — collecting annoyances for Phase 2)

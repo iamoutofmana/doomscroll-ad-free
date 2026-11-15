@@ -11,9 +11,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
-// Placeholder brand palette ("feed list" ink + signal orange) — proper branding pass lands in Phase 5.
+// "Ink & Signal" brand palette — see docs/branding/README.md.
 private val Ink = Color(0xFF10151A)
-private val Paper = Color(0xFFE9EEF2)
+private val Paper = Color(0xFFF4F1EA)
 private val Signal = Color(0xFFFF6A3D)
 
 private val LightScheme =
