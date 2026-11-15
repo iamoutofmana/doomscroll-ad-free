@@ -9,6 +9,7 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import io.github.iamoutofmana.doomscroll.DoomscrollApplication
+import io.github.iamoutofmana.doomscroll.widget.refreshFeedWidget
 import java.util.concurrent.TimeUnit
 
 /** Background sync: every ~2h when connected (plan §5, Appendix B). */
@@ -21,6 +22,7 @@ class SyncWorker(
             val container = (applicationContext as DoomscrollApplication).container
             container.syncEngine.syncAll()
             container.lastAutoSyncAt = System.currentTimeMillis()
+            refreshFeedWidget(applicationContext)
             Result.success()
         } catch (e: Exception) {
             Result.retry()

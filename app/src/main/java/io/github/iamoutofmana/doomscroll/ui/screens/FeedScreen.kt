@@ -58,6 +58,7 @@ import io.github.iamoutofmana.doomscroll.ui.LocalAppContainer
 import io.github.iamoutofmana.doomscroll.ui.components.ArticleCard
 import io.github.iamoutofmana.doomscroll.ui.components.FilteredArticlesDialog
 import io.github.iamoutofmana.doomscroll.ui.components.rememberOpenArticle
+import io.github.iamoutofmana.doomscroll.widget.refreshFeedWidget
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -67,6 +68,7 @@ private const val AUTO_SYNC_STALE_MS = 15 * 60_000L
 fun FeedScreen(
     contentPadding: PaddingValues,
     onOpenSources: () -> Unit,
+    onRead: (Long) -> Unit,
 ) {
     val container = LocalAppContainer.current
     val context = LocalContext.current
@@ -97,14 +99,15 @@ fun FeedScreen(
             runCatching {
                 container.enrichment.prefetch(container.articleRepository.feed.first())
             }
+            refreshFeedWidget(context)
         }
     }
 
     fun onCardTap(group: StoryClusterer.StoryGroup) {
         val primary = group.primary
         if (expandedId == primary.id) {
-            // Second tap on an expanded card opens the article (user feedback #2).
-            openArticle(primary)
+            // Second tap on an expanded card opens reader mode (Phase 2).
+            onRead(primary.id)
         } else {
             expandedId = primary.id
             scope.launch { container.articleRepository.markRead(primary.id) }
@@ -224,6 +227,7 @@ fun FeedScreen(
                                     previewLoading = previewLoading && expandedId == group.primary.id,
                                     onTap = { onCardTap(group) },
                                     onOpenRelated = { other -> openArticle(other) },
+                                    onOpenInBrowser = { openArticle(group.primary) },
                                     onToggleSave = {
                                         scope.launch {
                                             container.articleRepository.setSaved(

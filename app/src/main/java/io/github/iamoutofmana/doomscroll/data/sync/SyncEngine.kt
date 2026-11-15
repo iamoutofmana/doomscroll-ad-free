@@ -5,7 +5,10 @@ import io.github.iamoutofmana.doomscroll.data.db.SourceEntity
 import io.github.iamoutofmana.doomscroll.data.network.FeedFetcher
 import io.github.iamoutofmana.doomscroll.data.network.GnRedirectResolver
 import io.github.iamoutofmana.doomscroll.data.repo.ArticleRepository
+import io.github.iamoutofmana.doomscroll.data.repo.RuleRepository
 import io.github.iamoutofmana.doomscroll.data.repo.SourceRepository
+import io.github.iamoutofmana.doomscroll.domain.filter.Rule
+import io.github.iamoutofmana.doomscroll.domain.filter.RuleEngine
 import io.github.iamoutofmana.doomscroll.domain.filter.SponsoredFilter
 import io.github.iamoutofmana.doomscroll.domain.googlenews.GoogleNews
 import io.github.iamoutofmana.doomscroll.domain.links.TitleNormalizer
@@ -29,6 +32,7 @@ import kotlinx.coroutines.sync.withLock
 class SyncEngine(
     private val sources: SourceRepository,
     private val articles: ArticleRepository,
+    private val rules: RuleRepository,
     private val fetcher: FeedFetcher,
     private val resolver: GnRedirectResolver,
     private val clock: () -> Long = { System.currentTimeMillis() },
@@ -58,8 +62,10 @@ class SyncEngine(
             .hiddenTitles(now - HIDDEN_MEMORY_MS)
             .mapTo(mutableSetOf()) { TitleNormalizer.normalize(it) }
 
+        val enabledRules = rules.enabledRules()
+
         for (src in enabled) {
-            val result = runCatching { syncSource(src, seenTitles, hiddenTitleKeys) }
+            val result = runCatching { syncSource(src, seenTitles, hiddenTitleKeys, enabledRules) }
             result
                 .onSuccess { newTotal += it }
                 .onFailure {
@@ -75,6 +81,7 @@ class SyncEngine(
         src: SourceEntity,
         seenTitles: MutableSet<String>? = null,
         hiddenTitles: Set<String>? = null,
+        enabledRules: List<Rule> = emptyList(),
     ): Int = when (val res = fetcher.fetch(src.url, src.etag, src.lastModified)) {
         FeedFetcher.Result.NotModified -> {
             sources.markSynced(src.id, clock(), src.etag, src.lastModified)
@@ -84,7 +91,7 @@ class SyncEngine(
             sources.markError(src.id, res.message, clock())
             0
         }
-        is FeedFetcher.Result.Content -> ingest(src, res, seenTitles, hiddenTitles)
+        is FeedFetcher.Result.Content -> ingest(src, res, seenTitles, hiddenTitles, enabledRules)
     }
 
     private suspend fun ingest(
@@ -92,6 +99,7 @@ class SyncEngine(
         res: FeedFetcher.Result.Content,
         seenTitles: MutableSet<String>?,
         hiddenTitles: Set<String>?,
+        enabledRules: List<Rule>,
     ): Int {
         val feed = FeedParser.parse(res.body, sourceUrl = src.url)
         val now = clock()
@@ -99,7 +107,7 @@ class SyncEngine(
 
         val entities = mutableListOf<ArticleEntity>()
         for (item in feed.items) {
-            val entity = mapItem(item, src, feed, isGn, now) ?: continue
+            val entity = mapItem(item, src, feed, isGn, now, enabledRules) ?: continue
             val key = TitleNormalizer.normalize(entity.title)
             // Never re-show a story the user hid (or the filter removed).
             if (hiddenTitles != null && key in hiddenTitles) continue
@@ -130,6 +138,7 @@ class SyncEngine(
         feed: ParsedFeed,
         isGn: Boolean,
         now: Long,
+        enabledRules: List<Rule>,
     ): ArticleEntity? {
         val link = item.link?.takeIf { it.isNotBlank() } ?: return null
         val headline = if (isGn) GoogleNews.splitTitle(item.title).first else item.title
@@ -138,6 +147,11 @@ class SyncEngine(
         val publisher = item.publisher?.takeIf { it.isNotBlank() }
             ?: titlePublisher
             ?: feed.title?.takeIf { !isGn && it.isNotBlank() }
+        val matchedRule = if (!sponsored) {
+            RuleEngine.isBlocked(item.title, link, publisher, enabledRules)
+        } else {
+            null
+        }
         val summary = if (isGn) {
             // Google News descriptions are link soup — never useful as a card summary.
             null
@@ -159,8 +173,12 @@ class SyncEngine(
             imageUrl = item.imageUrl?.takeIf { it.isNotBlank() },
             audioUrl = item.audioUrl?.takeIf { it.isNotBlank() },
             videoUrl = item.videoUrl?.takeIf { it.isNotBlank() },
-            hiddenAt = if (sponsored) now else null,
-            hiddenReason = if (sponsored) HiddenReason.SPONSORED_FILTER.name else null,
+            hiddenAt = if (sponsored || matchedRule != null) now else null,
+            hiddenReason = when {
+                sponsored -> HiddenReason.SPONSORED_FILTER.name
+                matchedRule != null -> "Rule: ${matchedRule.pattern}"
+                else -> null
+            },
         )
     }
 

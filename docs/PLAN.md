@@ -297,6 +297,15 @@ FreshRSS/Miniflux sync · Mastodon sources · "news near me" geo feed · multi-w
     - [x] Preview **prefetch**: after each sync, top ~6 feed items are warmed so hero images/summaries appear without tapping
     - [x] Bug fix: auto-sync-on-open never fired (one-shot LaunchedEffect saw an empty source flow) — now keyed on source presence
     - [x] Tests: 78 passing; CI green (run 43734964275 — resolver fix; run 43735633898 — prefetch + auto-sync, 1m37s)
+- [x] **Phase 2 (Nov 15, 2026) — media-page replacement + reader + filters (phone disconnected; core built & unit-verified):**
+    - [x] **Glance home-screen widget** (`FeedWidget`): scrollable text feed (headline + source · time), tap row → reader deep link, tap header → app, dark styling matching the app; re-renders after every sync (UI refresh + WorkManager)
+    - [x] **Reader mode** (`ReaderScreen`/`ReaderService`/`ArticleTextExtractor`): jsoup extraction with article→main→body fallbacks, junk filtering, 80-block/30k-char caps; cached in Room (`readerText`); A−/A+ font controls; "Original" opens the publisher
+    - [x] **Filter rules** (`RuleEngine`/`RuleRepository`/`FilterRulesDialog`): hide by keyword or domain — applied at ingest, retroactively on creation, and logged as "Rule: …" in the reviewable filtered list
+    - [x] DB v2 with additive migration (reader cache columns + `rules` table) — existing articles/sources survive
+    - [x] Article card menu gains "Open in browser"; second tap now opens in-app reader (no publisher ads)
+    - [x] Tests: 88 passing (added text extractor + rule engine suites)
+    - [ ] Device verification: widget behavior on One UI, reader extraction against live publishers — pending phone
+    - [ ] OPML import/export — next session
 - [ ] 3 days of daily driving without Samsung's media page → **Phase 1 DoD** (in progress — collecting annoyances for Phase 2)
 
 ---

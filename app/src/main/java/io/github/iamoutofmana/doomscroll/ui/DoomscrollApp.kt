@@ -12,8 +12,11 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -22,6 +25,7 @@ import androidx.compose.ui.res.stringResource
 import io.github.iamoutofmana.doomscroll.R
 import io.github.iamoutofmana.doomscroll.data.container.AppContainer
 import io.github.iamoutofmana.doomscroll.ui.screens.FeedScreen
+import io.github.iamoutofmana.doomscroll.ui.screens.ReaderScreen
 import io.github.iamoutofmana.doomscroll.ui.screens.SavedScreen
 import io.github.iamoutofmana.doomscroll.ui.screens.SourcesScreen
 
@@ -39,8 +43,24 @@ private enum class Tab(
 }
 
 @Composable
-fun DoomscrollApp() {
+fun DoomscrollApp(pendingArticleId: MutableState<Long?>? = null) {
     var selected by rememberSaveable { mutableIntStateOf(0) }
+    var readerArticleId by rememberSaveable { mutableStateOf<Long?>(null) }
+
+    // Widget taps arrive through the activity; open reader mode directly.
+    LaunchedEffect(pendingArticleId?.value) {
+        pendingArticleId?.value?.let { id ->
+            readerArticleId = id
+            pendingArticleId.value = null
+        }
+    }
+
+    val currentReader = readerArticleId
+    if (currentReader != null) {
+        ReaderScreen(articleId = currentReader, onClose = { readerArticleId = null })
+        return
+    }
+
     Scaffold(
         // Screens manage their own insets; the outer Scaffold only reserves the bottom bar.
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -58,8 +78,15 @@ fun DoomscrollApp() {
         },
     ) { padding ->
         when (selected) {
-            0 -> FeedScreen(contentPadding = padding, onOpenSources = { selected = 2 })
-            1 -> SavedScreen(contentPadding = padding)
+            0 -> FeedScreen(
+                contentPadding = padding,
+                onOpenSources = { selected = 2 },
+                onRead = { readerArticleId = it },
+            )
+            1 -> SavedScreen(
+                contentPadding = padding,
+                onRead = { readerArticleId = it },
+            )
             else -> SourcesScreen(contentPadding = padding)
         }
     }

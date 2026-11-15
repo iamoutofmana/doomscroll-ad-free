@@ -1,5 +1,6 @@
 package io.github.iamoutofmana.doomscroll.data.network
 
+import io.github.iamoutofmana.doomscroll.domain.links.ArticleHeuristics
 import io.github.iamoutofmana.doomscroll.domain.links.HtmlText
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -23,26 +24,6 @@ object PreviewParser {
     private const val PARAGRAPH_MIN = 60
     private const val PARAGRAPH_MAX = 800
     private const val MAX_PARAGRAPHS = 3
-
-    private val JUNK_PATTERNS = listOf(
-        Regex("(?i)cookie"),
-        Regex("(?i)subscribe"),
-        Regex("(?i)newsletter"),
-        Regex("(?i)sign\\s*(up|in)"),
-        Regex("(?i)log\\s*in"),
-        Regex("(?i)advertis"),
-        Regex("(?i)all rights reserved"),
-        Regex("(?i)privacy policy"),
-        Regex("(?i)terms of (service|use)"),
-        Regex("(?i)share (this|on)"),
-        Regex("(?i)follow us"),
-        Regex("(?i)enable javascript"),
-        Regex("(?i)related (articles|stories|content)"),
-        Regex("(?i)supported by"),
-        Regex("(?i)continue reading"),
-        Regex("(?i)read more"),
-        Regex("(?i)download (the|our) app"),
-    )
 
     fun parse(
         html: String,
@@ -85,7 +66,7 @@ object PreviewParser {
             val paragraphs = elements
                 .map { it.text().trim() }
                 .filter { it.length in PARAGRAPH_MIN..PARAGRAPH_MAX }
-                .filter { paragraph -> JUNK_PATTERNS.none { it.containsMatchIn(paragraph) } }
+                .filterNot(ArticleHeuristics::isJunk)
             if (paragraphs.isNotEmpty()) {
                 return paragraphs.take(MAX_PARAGRAPHS).joinToString("\n\n")
             }

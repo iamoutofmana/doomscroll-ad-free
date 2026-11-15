@@ -27,6 +27,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,6 +49,7 @@ import io.github.iamoutofmana.doomscroll.domain.model.SourceType
 import io.github.iamoutofmana.doomscroll.domain.popularsources.PopularSources
 import io.github.iamoutofmana.doomscroll.domain.time.TimeText
 import io.github.iamoutofmana.doomscroll.ui.LocalAppContainer
+import io.github.iamoutofmana.doomscroll.ui.components.FilterRulesDialog
 import kotlinx.coroutines.launch
 
 @Composable
@@ -57,6 +59,7 @@ fun SourcesScreen(contentPadding: PaddingValues) {
     val scope = rememberCoroutineScope()
     val sources by container.sourceRepository.sources.collectAsStateWithLifecycle(initialValue = emptyList())
     var showAdd by remember { mutableStateOf(false) }
+    var showFilters by remember { mutableStateOf(false) }
     var syncing by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -91,6 +94,9 @@ fun SourcesScreen(contentPadding: PaddingValues) {
                     style = MaterialTheme.typography.headlineSmall,
                     modifier = Modifier.weight(1f),
                 )
+                TextButton(onClick = { showFilters = true }) {
+                    Text(stringResource(R.string.rules_button))
+                }
                 IconButton(
                     onClick = { scope.launch { doSync() } },
                     enabled = !syncing,
@@ -241,6 +247,10 @@ fun SourcesScreen(contentPadding: PaddingValues) {
                 }
             },
         )
+    }
+
+    if (showFilters) {
+        FilterRulesDialog(onDismiss = { showFilters = false })
     }
 }
 

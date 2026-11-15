@@ -50,6 +50,15 @@ class ArticleRepository(private val dao: ArticleDao) {
 
     suspend fun hiddenTitles(sinceMs: Long): List<String> = dao.hiddenTitles(sinceMs)
 
+    suspend fun byId(id: Long): ArticleEntity? = dao.byId(id)
+
+    suspend fun latestForWidget(limit: Int): List<ArticleEntity> = dao.activeArticles(limit)
+
+    suspend fun saveReaderText(
+        id: Long,
+        text: String,
+    ) = dao.saveReaderText(id, text, System.currentTimeMillis())
+
     private companion object {
         const val DAY_MS = 86_400_000L
     }

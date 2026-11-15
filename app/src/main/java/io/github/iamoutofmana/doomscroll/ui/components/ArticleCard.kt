@@ -57,6 +57,7 @@ fun ArticleCard(
     expanded: Boolean = false,
     previewLoading: Boolean = false,
     onOpenRelated: (ArticleEntity) -> Unit = {},
+    onOpenInBrowser: () -> Unit = {},
 ) {
     val context = LocalContext.current
     var menuOpen by remember { mutableStateOf(false) }
@@ -194,6 +195,13 @@ fun ArticleCard(
                                     putExtra(Intent.EXTRA_TEXT, url)
                                 }
                                 context.startActivity(Intent.createChooser(send, null))
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.article_open_browser)) },
+                            onClick = {
+                                menuOpen = false
+                                onOpenInBrowser()
                             },
                         )
                     }

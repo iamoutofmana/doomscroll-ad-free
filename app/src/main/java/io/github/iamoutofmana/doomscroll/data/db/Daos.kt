@@ -83,4 +83,28 @@ interface ArticleDao {
             "resolvedLink = COALESCE(:resolvedLink, resolvedLink) WHERE id = :id",
     )
     suspend fun updatePreview(id: Long, summary: String?, imageUrl: String?, resolvedLink: String?)
+
+    @Query("SELECT * FROM articles WHERE id = :id")
+    suspend fun byId(id: Long): ArticleEntity?
+
+    @Query("SELECT * FROM articles WHERE hiddenAt IS NULL ORDER BY COALESCE(publishedAt, fetchedAt) DESC LIMIT :limit")
+    suspend fun activeArticles(limit: Int): List<ArticleEntity>
+
+    @Query("UPDATE articles SET readerText = :text, readerFetchedAt = :at WHERE id = :id")
+    suspend fun saveReaderText(id: Long, text: String, at: Long)
+}
+
+@Dao
+interface RuleDao {
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insert(rule: RuleEntity): Long
+
+    @Query("SELECT * FROM rules ORDER BY createdAt DESC")
+    fun observeAll(): Flow<List<RuleEntity>>
+
+    @Query("SELECT * FROM rules WHERE enabled = 1")
+    suspend fun enabled(): List<RuleEntity>
+
+    @Query("DELETE FROM rules WHERE id = :id")
+    suspend fun delete(id: Long)
 }

@@ -100,4 +100,27 @@
     <string name="tap_to_open">Tap again to read the full article</string>
     <string name="related_header">Also covered by</string>
     <string name="related_count">%1$d related</string>
+
+    <string name="widget_label">Doomscroll Ad Free — feed</string>
+    <string name="widget_header">Doomscroll Ad Free</string>
+    <string name="widget_empty">Add sources in the app to fill this widget.</string>
+
+    <string name="reader_loading">Extracting article…</string>
+    <string name="reader_failed">Couldn\'t extract this article</string>
+    <string name="reader_retry">Try again</string>
+    <string name="reader_original">Original</string>
+    <string name="reader_font_smaller">A−</string>
+    <string name="reader_font_larger">A+</string>
+
+    <string name="rules_button">Filters</string>
+    <string name="rules_title">Story filters</string>
+    <string name="rules_hint">Hide stories containing these words, or from these domains/sources.</string>
+    <string name="rules_keyword">Keyword</string>
+    <string name="rules_domain">Domain</string>
+    <string name="rules_pattern_hint">bitcoin, dailymail.co.uk</string>
+    <string name="rules_add">Add</string>
+    <string name="rules_empty">No rules yet.</string>
+    <string name="rules_delete">Delete rule</string>
+
+    <string name="article_open_browser">Open in browser</string>
 </resources>

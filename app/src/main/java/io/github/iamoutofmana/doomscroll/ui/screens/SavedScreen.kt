@@ -28,7 +28,10 @@ import io.github.iamoutofmana.doomscroll.ui.components.rememberOpenArticle
 import kotlinx.coroutines.launch
 
 @Composable
-fun SavedScreen(contentPadding: PaddingValues) {
+fun SavedScreen(
+    contentPadding: PaddingValues,
+    onRead: (Long) -> Unit,
+) {
     val container = LocalAppContainer.current
     val scope = rememberCoroutineScope()
     val saved by container.articleRepository.saved.collectAsStateWithLifecycle(initialValue = emptyList())
@@ -67,7 +70,8 @@ fun SavedScreen(contentPadding: PaddingValues) {
                 items(saved, key = { it.id }) { article ->
                     ArticleCard(
                         article = article,
-                        onTap = { openArticle(article) },
+                        onTap = { onRead(article.id) },
+                        onOpenInBrowser = { openArticle(article) },
                         onToggleSave = {
                             scope.launch { container.articleRepository.setSaved(article.id, false) }
                         },

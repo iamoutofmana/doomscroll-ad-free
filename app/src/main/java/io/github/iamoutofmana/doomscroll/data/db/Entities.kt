@@ -9,6 +9,16 @@ import io.github.iamoutofmana.doomscroll.domain.model.SourceType
 // Phase 1 simplification (documented in docs/PLAN.md §5): Room entities double as UI models.
 // When the project modularizes, split domain models + mappers out of the data layer.
 
+@Entity(tableName = "rules", indices = [Index(value = ["pattern", "type"], unique = true)])
+data class RuleEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    /** RuleType.name */
+    val type: String,
+    val pattern: String,
+    val enabled: Boolean = true,
+    val createdAt: Long,
+)
+
 @Entity(tableName = "sources", indices = [Index(value = ["url"], unique = true)])
 data class SourceEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
@@ -67,4 +77,7 @@ data class ArticleEntity(
     val hiddenAt: Long? = null,
     /** HiddenReason.name — always logged; hiding is reversible (plan §7). */
     val hiddenReason: String? = null,
+    /** Cached reader-mode text (Phase 2); null until extracted. */
+    val readerText: String? = null,
+    val readerFetchedAt: Long? = null,
 )
