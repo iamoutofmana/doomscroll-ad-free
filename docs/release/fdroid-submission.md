@@ -14,8 +14,10 @@ The only step that requires a human account is the merge request to
 ## Step-by-step (≈10 minutes)
 
 1. **Sign in to GitLab** — https://gitlab.com (GitHub sign-in works).
-2. **Fork** `fdroiddata`: https://gitlab.com/fdroiddata/fdroiddata/-/forks/new
-   (project page: https://gitlab.com/fdroiddata/fdroiddata — namespace `fdroiddata`, project `fdroiddata`)
+2. **Fork** `fdroiddata`: https://gitlab.com/fdroid/fdroiddata/-/forks/new
+   (project: https://gitlab.com/fdroid/fdroiddata — group `fdroid`, project `fdroiddata`)
+   Update checks / MR list: https://gitlab.com/fdroid/fdroiddata/-/merge_requests
+   Optional tracking issue (submission queue): https://gitlab.com/fdroid/rfp/issues
 3. **Add the metadata file** in your fork:
    - Path: `metadata/io.github.iamoutofmana.doomscroll.yml`
    - Content: everything in `docs/release/fdroid-metadata.yml` (without the leading
