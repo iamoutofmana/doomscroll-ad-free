@@ -333,7 +333,10 @@ FreshRSS/Miniflux sync · Mastodon sources · "news near me" geo feed · multi-w
     - [x] README screenshots added (feed, reader, widget, help)
     - [ ] Install release build on device (requires uninstall of debug build — data reset, pending user approval)
     - [x] **Release 1.0.0 installed on device (Nov 15)** — old debug data reset as expected; fresh install, sources added through UI, sync + feed verified under R8; zero crashes
-    - [ ] F-Droid + IzzyOnDroid metadata; v1.0.0 tag + GitHub Release
+    - [x] **GitHub Release v1.0.0 published** — signed APK attached (SHA-256 `58B5365A…`), release notes with signing guidance; README install section updated
+    - [x] F-Droid/IzzyOnDroid ready: fastlane metadata (title, short/full description, changelog 10, 4 phone screenshots) + recipe draft at `docs/release/fdroid-metadata.yml`
+    - [ ] Submit to F-Droid (fdroiddata MR — requires the maintainer's GitLab account) and IzzyOnDroid (repo issue)
+    - [ ] Optional: Play Store track; signatures differ per distribution (uninstall to switch)
     - [ ] On-device widget visual pass (add via launcher, check taps/sizing on One UI) — user action
     - [ ] OPML import/export — next session
 - [ ] 3 days of daily driving without Samsung's media page → **Phase 1 DoD** (in progress — collecting annoyances for Phase 2)
