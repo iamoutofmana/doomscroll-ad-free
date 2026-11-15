@@ -19,8 +19,8 @@ import kotlinx.coroutines.sync.withLock
 
 /**
  * The whole pipeline in one place (plan §5):
- * fetch (conditional GET) -> parse -> normalize -> sponsored filter -> dedupe -> store
- * -> resolve GN links.
+ * fetch (conditional GET) -> parse -> normalize -> sponsored filter -> dedupe/hide-skip
+ * -> store -> resolve GN links.
  *
  * Sequential over sources on purpose: polite to servers, simple to reason about, and fast
  * enough for a personal number of feeds. A Mutex keeps UI-triggered refreshes and the
@@ -45,15 +45,21 @@ class SyncEngine(
         val enabled = sources.enabled()
         var newTotal = 0
         var failures = 0
+        val now = clock()
 
-        // Cross-source dedupe window: 7 days. Same headline across multiple GN topics
-        // (Top stories, Technology, ...) or across GN + a direct RSS republish shows once.
-        val cutoffMs = clock() - DEDUPE_WINDOW_MS
-        val seenTitles: MutableSet<String> =
-            articles.recentTitles(cutoffMs).mapTo(mutableSetOf()) { TitleNormalizer.normalize(it) }
+        // Cross-source dedupe window: same headline across multiple GN topics shows once.
+        val seenTitles: MutableSet<String> = articles
+            .recentTitles(now - DEDUPE_WINDOW_MS)
+            .mapTo(mutableSetOf()) { TitleNormalizer.normalize(it) }
+
+        // Previously hidden stories stay gone (user feedback #5). 30-day memory matches
+        // the prune window; unhiding an article lifts its title from this set naturally.
+        val hiddenTitleKeys: Set<String> = articles
+            .hiddenTitles(now - HIDDEN_MEMORY_MS)
+            .mapTo(mutableSetOf()) { TitleNormalizer.normalize(it) }
 
         for (src in enabled) {
-            val result = runCatching { syncSource(src, seenTitles) }
+            val result = runCatching { syncSource(src, seenTitles, hiddenTitleKeys) }
             result
                 .onSuccess { newTotal += it }
                 .onFailure {
@@ -68,6 +74,7 @@ class SyncEngine(
     suspend fun syncSource(
         src: SourceEntity,
         seenTitles: MutableSet<String>? = null,
+        hiddenTitles: Set<String>? = null,
     ): Int = when (val res = fetcher.fetch(src.url, src.etag, src.lastModified)) {
         FeedFetcher.Result.NotModified -> {
             sources.markSynced(src.id, clock(), src.etag, src.lastModified)
@@ -77,13 +84,14 @@ class SyncEngine(
             sources.markError(src.id, res.message, clock())
             0
         }
-        is FeedFetcher.Result.Content -> ingest(src, res, seenTitles)
+        is FeedFetcher.Result.Content -> ingest(src, res, seenTitles, hiddenTitles)
     }
 
     private suspend fun ingest(
         src: SourceEntity,
         res: FeedFetcher.Result.Content,
         seenTitles: MutableSet<String>?,
+        hiddenTitles: Set<String>?,
     ): Int {
         val feed = FeedParser.parse(res.body, sourceUrl = src.url)
         val now = clock()
@@ -92,12 +100,13 @@ class SyncEngine(
         val entities = mutableListOf<ArticleEntity>()
         for (item in feed.items) {
             val entity = mapItem(item, src, feed, isGn, now) ?: continue
-            val normalizedTitle = TitleNormalizer.normalize(entity.title)
-            // Cross-source dedupe: skip if the same headline was already seen (either in a
-            // previously-synced source or earlier in this batch).
+            val key = TitleNormalizer.normalize(entity.title)
+            // Never re-show a story the user hid (or the filter removed).
+            if (hiddenTitles != null && key in hiddenTitles) continue
+            // Cross-source dedupe: skip if the same headline was already seen.
             if (seenTitles != null) {
-                if (normalizedTitle in seenTitles) continue
-                seenTitles.add(normalizedTitle)
+                if (key in seenTitles) continue
+                seenTitles.add(key)
             }
             entities.add(entity)
         }
@@ -183,5 +192,6 @@ class SyncEngine(
         const val RESOLVE_CAP = 15
         const val RESOLVE_FAILURE_LIMIT = 3
         const val DEDUPE_WINDOW_MS = 7L * 24L * 60L * 60L * 1000L
+        const val HIDDEN_MEMORY_MS = 30L * 24L * 60L * 60L * 1000L
     }
 }

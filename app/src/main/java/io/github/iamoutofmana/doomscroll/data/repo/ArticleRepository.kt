@@ -4,9 +4,11 @@ import io.github.iamoutofmana.doomscroll.data.db.ArticleDao
 import io.github.iamoutofmana.doomscroll.data.db.ArticleEntity
 import io.github.iamoutofmana.doomscroll.domain.model.HiddenReason
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 class ArticleRepository(private val dao: ArticleDao) {
-    val feed: Flow<List<ArticleEntity>> = dao.observeFeed()
+    /** Feed is grouped so near-duplicate stories show once (user feedback #4). */
+    val feed: Flow<List<StoryClusterer.StoryGroup>> = dao.observeFeed().map { StoryClusterer.cluster(it) }
     val saved: Flow<List<ArticleEntity>> = dao.observeSaved()
     val hidden: Flow<List<ArticleEntity>> = dao.observeHidden()
 
@@ -32,12 +34,21 @@ class ArticleRepository(private val dao: ArticleDao) {
         url: String,
     ) = dao.setResolvedLink(id, url)
 
+    suspend fun updatePreview(
+        id: Long,
+        summary: String?,
+        imageUrl: String?,
+        resolvedLink: String?,
+    ) = dao.updatePreview(id, summary, imageUrl, resolvedLink)
+
     suspend fun pruneOlderThanDays(days: Int) {
         val cutoff = System.currentTimeMillis() - days * DAY_MS
         dao.prune(cutoff)
     }
 
     suspend fun recentTitles(sinceMs: Long): List<String> = dao.recentTitles(sinceMs)
+
+    suspend fun hiddenTitles(sinceMs: Long): List<String> = dao.hiddenTitles(sinceMs)
 
     private companion object {
         const val DAY_MS = 86_400_000L

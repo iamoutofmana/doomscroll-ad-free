@@ -10,7 +10,7 @@ Started because the Samsung media page shows ads and there is no way to replace 
 ## The three promises
 
 1. **No ads. No sponsored items. Ever.** No ad SDKs, no analytics, no trackers — plus an on-device filter that removes sponsored/advertorial items publishers sneak into feeds.
-2. **Your data stays on your phone.** No account, no telemetry. The app only ever talks to the feeds *you* configure.
+2. **Your data stays on your phone.** No account, no telemetry. The app only ever talks to the feeds *you* configure — plus the article pages you open a preview for.
 3. **Open source, forever.** GPL-3.0, FOSS-only dependencies, intended for F-Droid.
 
 ## Roadmap

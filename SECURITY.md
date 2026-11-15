@@ -3,7 +3,7 @@
 ## Design posture
 
 - The app collects nothing: no accounts, no telemetry, no crash reporting.
-- Network access is limited to feeds the user explicitly configures.
+- Network access is limited to feeds the user explicitly configures, plus the article pages whose previews the user requests.
 - No dynamic code loading, no proprietary blobs; all dependencies are FOSS.
 - Feed content is treated as untrusted input: parsed defensively and sanitized before rendering (hardened further with Phase 2's reader mode).
 

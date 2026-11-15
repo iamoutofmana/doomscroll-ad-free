@@ -1,5 +1,6 @@
 package io.github.iamoutofmana.doomscroll.data.network
 
+import io.github.iamoutofmana.doomscroll.domain.AppMetadata
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
@@ -117,7 +118,7 @@ class GnRedirectResolver(private val client: OkHttpClient) {
     ): String? = withContext(Dispatchers.IO) {
         try {
             val page = client.newCall(
-                Request.Builder().url(pageUrl).header("User-Agent", BROWSER_UA).build(),
+                Request.Builder().url(pageUrl).header("User-Agent", AppMetadata.BROWSER_UA).build(),
             ).execute().use { resp ->
                 if (resp.isSuccessful) resp.body?.string() else null
             } ?: return@withContext null
@@ -133,7 +134,7 @@ class GnRedirectResolver(private val client: OkHttpClient) {
             val body = client.newCall(
                 Request.Builder()
                     .url(BATCHEXECUTE_URL)
-                    .header("User-Agent", BROWSER_UA)
+                    .header("User-Agent", AppMetadata.BROWSER_UA)
                     .post(form)
                     .build(),
             ).execute().use { resp ->
@@ -162,8 +163,6 @@ class GnRedirectResolver(private val client: OkHttpClient) {
     private companion object {
         const val RPC_ID = "FbvAvj"
         const val BATCHEXECUTE_URL = "https://news.google.com/_/DotsSplashUi/data/batchexecute"
-        const val BROWSER_UA =
-            "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Mobile Safari/537.36"
         val ARTICLE_ID = Regex("""/(?:articles?|read)/([^/?#]+)""")
         val ATTR_SG = Regex("""data-n-a-sg="([^"]+)"""")
         val ATTR_TS = Regex("""data-n-a-ts="([^"]+)"""")

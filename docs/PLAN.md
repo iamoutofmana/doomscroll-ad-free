@@ -277,6 +277,14 @@ FreshRSS/Miniflux sync · Mastodon sources · "news near me" geo feed · multi-w
     - [x] AddSourceSheet split into "Google News" / "More sources" tabs
     - [x] Pushed + installed on device (commit c15c948)
 - [x] Image extraction: confirmed working for Atom `<content>` (The Verge) and RSS `<description>` (hero images from non-Google-News sources). Google News's public RSS genuinely strips images from items — hero-image extraction for GN items is Phase 2 (reader mode / publisher-page scraping).
+- [x] **Phase 1.6 UX feedback (Nov 15, 2026):**
+    - [x] Swipe right to hide a card, with Undo snackbar
+    - [x] Two-stage tap: first tap expands (summary + related coverage), second tap opens in Custom Tabs
+    - [x] Lazy preview enrichment (jsoup): `og:description` + `og:image` from publisher pages — gives Google News cards summaries and hero images on first expand
+    - [x] ⋮ pinned to the card's right edge (no overlay, no movement with title length)
+    - [x] Story grouping: near-duplicate headlines cluster into one card with "Also covered by" list (title-similarity ≥ 0.5, 48h window)
+    - [x] Hidden-story memory: hidden titles skipped at ingest for 30 days — hidden stories never reappear
+    - [x] Tests: 74 passing
 - [ ] 3 days of daily driving without Samsung's media page → **Phase 1 DoD** (in progress — collecting annoyances for Phase 2)
 
 ---

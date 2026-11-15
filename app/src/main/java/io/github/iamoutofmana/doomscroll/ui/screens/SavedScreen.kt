@@ -67,7 +67,7 @@ fun SavedScreen(contentPadding: PaddingValues) {
                 items(saved, key = { it.id }) { article ->
                     ArticleCard(
                         article = article,
-                        onOpen = { openArticle(article) },
+                        onTap = { openArticle(article) },
                         onToggleSave = {
                             scope.launch { container.articleRepository.setSaved(article.id, false) }
                         },

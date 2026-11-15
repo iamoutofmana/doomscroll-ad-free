@@ -68,7 +68,19 @@ interface ArticleDao {
     @Query("DELETE FROM articles WHERE savedAt IS NULL AND fetchedAt < :cutoff")
     suspend fun prune(cutoff: Long)
 
-    /** Titles published since `cutoff` ms ago, across all sources — used by cross-source dedupe. */
-    @Query("SELECT title FROM articles WHERE publishedAt IS NOT NULL AND publishedAt >= :cutoff")
+    /** Titles of recent articles, across all sources — used by cross-source dedupe. */
+    @Query("SELECT title FROM articles WHERE COALESCE(publishedAt, fetchedAt) >= :cutoff")
     suspend fun recentTitles(cutoff: Long): List<String>
+
+    /** Titles the user (or the filter) hid since `cutoff` — never re-shown (plan §7). */
+    @Query("SELECT title FROM articles WHERE hiddenAt IS NOT NULL AND hiddenAt >= :cutoff")
+    suspend fun hiddenTitles(cutoff: Long): List<String>
+
+    /** Fills in lazily-fetched preview fields without clobbering existing values. */
+    @Query(
+        "UPDATE articles SET summary = COALESCE(:summary, summary), " +
+            "imageUrl = COALESCE(:imageUrl, imageUrl), " +
+            "resolvedLink = COALESCE(:resolvedLink, resolvedLink) WHERE id = :id",
+    )
+    suspend fun updatePreview(id: Long, summary: String?, imageUrl: String?, resolvedLink: String?)
 }

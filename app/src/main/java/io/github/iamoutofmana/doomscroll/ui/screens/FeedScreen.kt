@@ -2,6 +2,7 @@
 
 package io.github.iamoutofmana.doomscroll.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,6 +15,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
@@ -24,25 +26,33 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxState
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.iamoutofmana.doomscroll.R
+import io.github.iamoutofmana.doomscroll.data.repo.StoryClusterer
 import io.github.iamoutofmana.doomscroll.ui.LocalAppContainer
 import io.github.iamoutofmana.doomscroll.ui.components.ArticleCard
 import io.github.iamoutofmana.doomscroll.ui.components.FilteredArticlesDialog
@@ -59,11 +69,13 @@ fun FeedScreen(
     val container = LocalAppContainer.current
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val articles by container.articleRepository.feed.collectAsStateWithLifecycle(initialValue = emptyList())
+    val groups by container.articleRepository.feed.collectAsStateWithLifecycle(initialValue = emptyList())
     val sources by container.sourceRepository.sources.collectAsStateWithLifecycle(initialValue = emptyList())
     val hidden by container.articleRepository.hidden.collectAsStateWithLifecycle(initialValue = emptyList())
     var refreshing by remember { mutableStateOf(false) }
     var showFiltered by remember { mutableStateOf(false) }
+    var expandedId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var previewLoading by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val openArticle = rememberOpenArticle()
 
@@ -80,6 +92,41 @@ fun FeedScreen(
             }
             snackbarHostState.showSnackbar(msg)
         }
+    }
+
+    fun onCardTap(group: StoryClusterer.StoryGroup) {
+        val primary = group.primary
+        if (expandedId == primary.id) {
+            // Second tap on an expanded card opens the article (user feedback #2).
+            openArticle(primary)
+        } else {
+            expandedId = primary.id
+            scope.launch { container.articleRepository.markRead(primary.id) }
+        }
+    }
+
+    fun onHideWithUndo(id: Long) {
+        if (expandedId == id) expandedId = null
+        scope.launch {
+            container.articleRepository.hide(id)
+            val result = snackbarHostState.showSnackbar(
+                message = context.getString(R.string.hidden_snackbar),
+                actionLabel = context.getString(R.string.undo),
+            )
+            if (result == SnackbarResult.ActionPerformed) container.articleRepository.unhide(id)
+        }
+    }
+
+    // Lazy preview fetch when a card is first expanded (summary + hero image).
+    LaunchedEffect(expandedId) {
+        val id = expandedId ?: return@LaunchedEffect
+        val article = groups
+            .asSequence()
+            .flatMap { sequenceOf(it.primary) + it.related.asSequence() }
+            .firstOrNull { it.id == id } ?: return@LaunchedEffect
+        previewLoading = true
+        runCatching { container.enrichment.ensurePreview(article) }
+        previewLoading = false
     }
 
     // Silent auto-sync when the app is opened with stale data (plan Appendix B).
@@ -124,7 +171,7 @@ fun FeedScreen(
                 onRefresh = { syncNow() },
                 modifier = Modifier.fillMaxSize(),
             ) {
-                if (articles.isEmpty()) {
+                if (groups.isEmpty()) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -143,19 +190,41 @@ fun FeedScreen(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = innerPadding,
                     ) {
-                        items(articles, key = { it.id }) { article ->
-                            ArticleCard(
-                                article = article,
-                                onOpen = { openArticle(article) },
-                                onToggleSave = {
-                                    scope.launch {
-                                        container.articleRepository.setSaved(article.id, article.savedAt == null)
+                        items(groups, key = { it.primary.id }) { group ->
+                            val dismissState = rememberSwipeToDismissBoxState(
+                                confirmValueChange = { value ->
+                                    if (value == SwipeToDismissBoxValue.StartToEnd) {
+                                        onHideWithUndo(group.primary.id)
+                                        true
+                                    } else {
+                                        false
                                     }
                                 },
-                                onHide = {
-                                    scope.launch { container.articleRepository.hide(article.id) }
-                                },
                             )
+                            SwipeToDismissBox(
+                                state = dismissState,
+                                enableDismissFromStartToEnd = true,
+                                enableDismissFromEndToStart = false,
+                                backgroundContent = { SwipeHideBackground(dismissState) },
+                            ) {
+                                ArticleCard(
+                                    article = group.primary,
+                                    related = group.related,
+                                    expanded = expandedId == group.primary.id,
+                                    previewLoading = previewLoading && expandedId == group.primary.id,
+                                    onTap = { onCardTap(group) },
+                                    onOpenRelated = { other -> openArticle(other) },
+                                    onToggleSave = {
+                                        scope.launch {
+                                            container.articleRepository.setSaved(
+                                                group.primary.id,
+                                                group.primary.savedAt == null,
+                                            )
+                                        }
+                                    },
+                                    onHide = { onHideWithUndo(group.primary.id) },
+                                )
+                            }
                         }
                     }
                 }
@@ -169,6 +238,27 @@ fun FeedScreen(
             onDismiss = { showFiltered = false },
             onUnhide = { id -> scope.launch { container.articleRepository.unhide(id) } },
             onUnhideAll = { scope.launch { container.articleRepository.unhideAll() } },
+        )
+    }
+}
+
+@Composable
+private fun SwipeHideBackground(state: SwipeToDismissBoxState) {
+    val active = state.dismissDirection == SwipeToDismissBoxValue.StartToEnd
+    val color = if (active) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surfaceVariant
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp, vertical = 6.dp)
+            .clip(MaterialTheme.shapes.medium)
+            .background(color)
+            .padding(end = 24.dp),
+        contentAlignment = Alignment.CenterEnd,
+    ) {
+        Icon(
+            Icons.Default.Delete,
+            contentDescription = stringResource(R.string.article_hide),
+            tint = MaterialTheme.colorScheme.onErrorContainer,
         )
     }
 }
