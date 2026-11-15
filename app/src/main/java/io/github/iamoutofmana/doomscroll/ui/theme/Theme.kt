@@ -11,15 +11,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
-// "Ink & Signal" brand palette — see docs/branding/README.md.
-private val Ink = Color(0xFF10151A)
-private val Paper = Color(0xFFF4F1EA)
-private val Signal = Color(0xFFFF6A3D)
+// "Friendly Doom" brand palette — see docs/branding/README.md.
+private val Ink = Color(0xFF1C1226)
+private val Paper = Color(0xFFFFF6E9)
+private val Coral = Color(0xFFFF5C7A)
+private val Lime = Color(0xFFC6FF4A)
 
 private val LightScheme =
     lightColorScheme(
-        primary = Signal,
-        onPrimary = Color.White,
+        primary = Coral,
+        onPrimary = Ink,
+        secondary = Lime,
+        onSecondary = Ink,
         background = Paper,
         onBackground = Ink,
         surface = Paper,
@@ -28,8 +31,10 @@ private val LightScheme =
 
 private val DarkScheme =
     darkColorScheme(
-        primary = Signal,
-        onPrimary = Color.White,
+        primary = Coral,
+        onPrimary = Ink,
+        secondary = Lime,
+        onSecondary = Ink,
         background = Ink,
         onBackground = Paper,
         surface = Ink,

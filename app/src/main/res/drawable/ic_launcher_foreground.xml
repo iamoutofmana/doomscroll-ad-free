@@ -1,31 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Ink & Signal app icon (adaptive foreground).
-  Three feed lines: two in paper, one in signal orange — the story you care about.
-  Bars are stroked lines with round caps (spans x≈26.5..81.5, inside the 66dp safe zone).
-  Monochrome gets tinted by the system; multi-color collapses to its alpha mask.
+  Friendly Doom app icon (adaptive foreground): a cozy "doom cloud" — cream body,
+  plum features, coral no-ads badge. Whole composition stays inside the 66dp safe zone
+  (x/y between 21 and 87) so circular/squircle launcher masks never clip it.
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+
+    <!-- Cloud body (ellipse centered 46,54, r 26x19) -->
+    <path
+        android:fillColor="#FFF6E9"
+        android:pathData="M20,54 a26,19 0 1,0 52,0 a26,19 0 1,0 -52,0 z" />
+
+    <!-- Cloud bump (ellipse centered 62,47, r 15x11.5) -->
+    <path
+        android:fillColor="#FFF6E9"
+        android:pathData="M47,47 a15,11.5 0 1,0 30,0 a15,11.5 0 1,0 -30,0 z" />
+
+    <!-- Eyes -->
+    <path
+        android:fillColor="#1C1226"
+        android:pathData="M41,50 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0 z" />
+    <path
+        android:fillColor="#1C1226"
+        android:pathData="M57,48 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0 z" />
+
+    <!-- Smile -->
     <path
         android:fillColor="#00000000"
-        android:strokeColor="#F4F1EA"
-        android:strokeWidth="9"
+        android:strokeColor="#1C1226"
+        android:strokeWidth="4"
         android:strokeLineCap="round"
-        android:pathData="M31,40.5 L77,40.5" />
+        android:pathData="M43,61 q8,6 16,1" />
+
+    <!-- Coral no-ads badge -->
+    <path
+        android:fillColor="#FF5C7A"
+        android:pathData="M62,72 a12,12 0 1,0 24,0 a12,12 0 1,0 -24,0 z" />
+
+    <!-- Badge bar (cream) -->
     <path
         android:fillColor="#00000000"
-        android:strokeColor="#F4F1EA"
-        android:strokeWidth="9"
+        android:strokeColor="#FFF6E9"
+        android:strokeWidth="4.5"
         android:strokeLineCap="round"
-        android:pathData="M31,54 L77,54" />
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#FF6A3D"
-        android:strokeWidth="9"
-        android:strokeLineCap="round"
-        android:pathData="M31,67.5 L68,67.5" />
+        android:pathData="M68.5,72 H79.5" />
 </vector>

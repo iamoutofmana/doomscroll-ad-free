@@ -1,6 +1,6 @@
-# Brand: Ink & Signal
+# Brand: Friendly Doom
 
-**Chosen:** Nov 15, 2026 (option 1 of 3 — see `brand-board.html` for all directions)
+**Chosen:** Nov 15, 2026 (option 2 of 3 — see `brand-board.html` for all directions)
 
 ## Identity
 
@@ -8,37 +8,44 @@
 |---|---|
 | **Launcher name** | Doomscroll |
 | **Full name** | Doomscroll Ad Free |
-| **Tagline** | Your feeds. Zero ads. |
-| **Personality** | Editorial, calm, trustworthy, timeless |
-| **Voice** | Precise and quiet. No hype, no exclamation marks. Explain what happened, then stop. |
+| **Tagline** | Same doom. No ads. |
+| **Personality** | Playful, self-aware, internet-native — but never loud inside the app |
+| **Voice** | Warm and dry. One joke maximum per screen, and only in decorative copy. Functional UI text stays plain. |
+
+The mascot is "the doom cloud": a cozy little cloud that is *going to* doomscroll with you —
+without the ads. Friendly Doom owns the irony the name already promises.
 
 ## Palette
 
 | Swatch | Hex | Role |
 |---|---|---|
-| Ink | `#10151A` | Dark surface, icon background, widget background |
-| Paper | `#F4F1EA` | Light surface, primary text on ink, icon lines |
-| Signal | `#FF6A3D` | Accent: the "one story that matters", links, the short feed line |
-| Slate | `#5B6770` | Secondary text, dividers (dark surfaces use `#9AA5AE` for meta text) |
+| Midnight Plum | `#1C1226` | Dark surface, icon background, widget background |
+| Cream | `#FFF6E9` | Light surface, primary text on plum, icon body |
+| Coral | `#FF5C7A` | Primary accent (badge, buttons), the "no-ads" mark |
+| Acid Lime | `#C6FF4A` | Secondary accent: highlights, stickers, success states |
 
-**Note on Material You:** on Android 12+ the in-app UI adopts wallpaper-derived colors. The brand palette
-drives the icon, the widget, store listings, and documentation — not the in-app surfaces.
+**Note on Material You:** on Android 12+ the in-app UI adopts wallpaper-derived colors.
+The brand palette drives the icon, widget, store listing, and documentation.
 
 ## Icon
 
-- Adaptive icon, 108dp viewport, background `#10151A`.
-- Foreground: three horizontal feed lines — two Paper, one Signal (shortened) — drawn as 9dp
-  stroke lines with round caps. Spans x≈26.5..81.5, inside the 66dp safe zone.
-- Monochrome variant reuses the same foreground (system tints it).
-- Legibility: must read at 24px. Never add outlines, gradients, or drop shadows.
+- Adaptive icon, 108dp viewport, background Midnight Plum `#1C1226`.
+- Foreground: cream doom cloud (body + bump), plum eyes and smile, coral badge with a
+  cream bar. Entire composition stays inside the 66dp safe zone (x/y 21–87) so circular
+  and squircle launcher masks never clip it.
+- Monochrome variant reuses the foreground (system tints it) — the cloud silhouette reads
+  clearly, which is why the badge sits inside the cloud bounds.
+- Legibility: must read at 24px. No outlines or gradients.
 
 ## Typography
 
-- UI: platform default (Roboto/Segoe via system) — the app deliberately doesn't ship custom fonts.
-- Wordmark (marketing/store): a grotesque with tight tracking (Space Grotesk suggested for future use).
+- UI: platform default (Roboto/Segoe via system) — no shipped fonts.
+- Wordmark (marketing/store): humanist sans with slightly rounded terminals
+  (Manrope/Outfit suggested for future assets).
 
 ## Do / Don't
 
-- ✅ Ink background, paper text, exactly one signal-orange element per composition.
-- ✅ Generous whitespace; text is the hero.
-- ❌ No mascots, no neon gradients, no multiple accent colors, no bright backgrounds.
+- ✅ One mascot moment per surface (onboarding, empty states, marketing) — not in the reading flow.
+- ✅ Plum backgrounds, cream text, coral for actions, lime for positive/confetti moments.
+- ❌ No horror/gore imagery, no edgy "doom" nihilism — the mascot is friendly.
+- ❌ No more than two accent colors in a single composition.
