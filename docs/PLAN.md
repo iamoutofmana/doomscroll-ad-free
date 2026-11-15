@@ -318,7 +318,7 @@ FreshRSS/Miniflux sync · Mastodon sources · "news near me" geo feed · multi-w
     - [x] Dependabot configured for Gradle + GitHub Actions
     - [x] Tests: 105 passing
     - [ ] Before public release: signed release APK + MobSF pass; enable Dependabot alerts on repo; optional Jazzer fuzz of the feed parser
-- [x] **Branding decided (Nov 15, 2026): "Friendly Doom"** — plum `#1C1226` / cream `#FFF6E9` / coral `#FF5C7A` / lime `#C6FF4A`; doom-cloud adaptive icon (safe-zone checked); tagline "Same doom. No ads."; launcher label "Doomscroll", full name in store/README. Spec: `docs/branding/README.md`, board: `docs/branding/brand-board.html` (switched from Ink & Signal after live review)
+- [x] **Branding decided (Nov 15, 2026): "Friendly Doom"** — plum `#1C1226` / cream `#FFF6E9` / coral `#FF5C7A` / lime `#C6FF4A`; doom-cloud adaptive icon (safe-zone checked, verified in app drawer); tagline "Same doom. No ads."; launcher label "Doomscroll", full name in store/README. Spec: `docs/branding/README.md`, board: `docs/branding/brand-board.html` (switched from Ink & Signal after live review); CI green (run 43762687623 — 1m45s)
     - [ ] On-device widget visual pass (add via launcher, check taps/sizing on One UI) — user action
     - [ ] OPML import/export — next session
 - [ ] 3 days of daily driving without Samsung's media page → **Phase 1 DoD** (in progress — collecting annoyances for Phase 2)
