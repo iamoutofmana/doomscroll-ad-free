@@ -71,4 +71,25 @@ class ArticleTextExtractorTest {
         val html = "<html><body><div>hi</div></body></html>"
         assertNull(ArticleTextExtractor.extract(html, "https://example.com/a"))
     }
+
+    @Test
+    fun skipsRepeatedTitleRelatedLinksAndBylines() {
+        val title = "Big Box Office Weekend For Everyone Involved In The Movie"
+        val body = "Johnny Depp returned to the top of box office charts this weekend with a solid opening for the new film."
+        val html = """
+            <html><body><article>
+              <h1>$title</h1>
+              <p>Rebecca Rubin</p>
+              <p>Senior Film and Media Reporter</p>
+              <p>$title</p>
+              <p>Another story from the related list that should not appear 2 hours ago</p>
+              <p>$body</p>
+            </article></body></html>
+        """.trimIndent()
+
+        val extracted = ArticleTextExtractor.extract(html, "https://example.com/a")
+        val paragraphs = requireNotNull(extracted).paragraphs
+
+        assertEquals(listOf(body), paragraphs)
+    }
 }

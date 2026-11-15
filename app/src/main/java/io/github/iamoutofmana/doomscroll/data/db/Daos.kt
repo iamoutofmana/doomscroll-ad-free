@@ -92,6 +92,9 @@ interface ArticleDao {
 
     @Query("UPDATE articles SET readerText = :text, readerFetchedAt = :at WHERE id = :id")
     suspend fun saveReaderText(id: Long, text: String, at: Long)
+
+    @Query("UPDATE articles SET readerText = NULL, readerFetchedAt = NULL WHERE readerText IS NOT NULL")
+    suspend fun clearReaderCache()
 }
 
 @Dao

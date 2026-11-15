@@ -59,6 +59,8 @@ class ArticleRepository(private val dao: ArticleDao) {
         text: String,
     ) = dao.saveReaderText(id, text, System.currentTimeMillis())
 
+    suspend fun clearReaderCache() = dao.clearReaderCache()
+
     private companion object {
         const val DAY_MS = 86_400_000L
     }
