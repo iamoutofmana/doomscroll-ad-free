@@ -305,7 +305,7 @@ FreshRSS/Miniflux sync · Mastodon sources · "news near me" geo feed · multi-w
     - [x] Article card menu gains "Open in browser"; second tap now opens in-app reader (no publisher ads)
     - [x] Tests: 88 passing (added text extractor + rule engine suites); CI green (run 43736630176 — 2m35s)
     - [x] **Device verification (Nov 15):** feed with prefetch hero images, story grouping ("N related"), expand summaries with real body paragraphs, and reader mode all verified via screenshots on the S23 Ultra
-    - [x] Reader extraction hardened from device findings: paragraphs-only, repeated-headline/byline/related-link filtering; extraction-cache versioning auto-invalidates stale text
+    - [x] Reader extraction hardened from device findings: paragraphs-only, repeated-headline/byline/related-link filtering; extraction-cache versioning auto-invalidates stale text; CI green (run 43751108726 — 1m50s)
     - [ ] On-device widget visual pass (add via launcher, check taps/sizing on One UI) — user action
     - [ ] OPML import/export — next session
 - [ ] 3 days of daily driving without Samsung's media page → **Phase 1 DoD** (in progress — collecting annoyances for Phase 2)
