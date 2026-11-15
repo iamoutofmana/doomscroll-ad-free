@@ -34,6 +34,40 @@ class PreviewParserTest {
     }
 
     @Test
+    fun prefersSubstantiveArticleBodyOverShortMetaBlurb() {
+        // User feedback #1: og:description echoes the headline; article paragraphs add substance.
+        val html = """
+            <html><head><meta property="og:description" content="Short blurb." /></head>
+            <body><article>
+              <p>First substantive paragraph of the story that goes into real detail about what happened.</p>
+              <p>Second paragraph continuing the story with more context and background information.</p>
+            </article></body></html>
+        """.trimIndent()
+
+        val preview = PreviewParser.parse(html, "https://example.com/a")
+        val description = requireNotNull(preview.description)
+
+        assertTrue(description.contains("First substantive paragraph"))
+        assertTrue(description.contains("Second paragraph continuing"))
+    }
+
+    @Test
+    fun filtersCookieAndSignupJunkParagraphs() {
+        val html = """
+            <html><body><article>
+              <p>We use cookies to improve your experience on this website and personalize content.</p>
+              <p>The actual article paragraph that has real news content worth showing to the reader.</p>
+            </article></body></html>
+        """.trimIndent()
+
+        val preview = PreviewParser.parse(html, "https://example.com/a")
+        val description = requireNotNull(preview.description)
+
+        assertFalse(description.contains("cookies"))
+        assertTrue(description.contains("actual article paragraph"))
+    }
+
+    @Test
     fun fallsBackToMetaDescription() {
         val html = """<html><head><meta name="description" content="Plain meta description." /></head></html>"""
 
@@ -62,7 +96,7 @@ class PreviewParserTest {
 
     @Test
     fun descriptionIsSanitizedAndCapped() {
-        val longDescription = "<p>Hello <b>world</b> " + "x".repeat(600) + "</p>"
+        val longDescription = "<p>Hello <b>world</b> " + "x".repeat(800) + "</p>"
         val html = """<html><head><meta property="og:description" content="$longDescription" /></head></html>"""
 
         val preview = PreviewParser.parse(html, "https://example.com/")
@@ -71,7 +105,7 @@ class PreviewParserTest {
         assertNotNull(description)
         val text = requireNotNull(description)
         assertFalse(text.contains("<"))
-        assertTrue(text.length <= 401)
+        assertTrue(text.length <= 601)
         assertTrue(text.endsWith("…"))
     }
 }

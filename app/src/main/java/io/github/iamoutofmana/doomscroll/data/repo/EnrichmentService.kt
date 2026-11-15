@@ -5,35 +5,49 @@ import io.github.iamoutofmana.doomscroll.data.network.ArticleEnricher
 
 /**
  * Lazily fills previews (summary + hero image) for articles whose feed carried neither —
- * notably every Google News item. Runs only when a card is expanded; failures back off
- * for a while so repeated taps don't hammer a dead publisher.
+ * notably every Google News item. Runs only when a card is expanded.
+ *
+ * Summaries that are merely headline echoes (short og:descriptions) get upgraded to the
+ * publisher's opening paragraphs on a later expand (user feedback #1). Failures and
+ * no-op fetches back off via an in-memory cooldown.
  */
 class EnrichmentService(
     private val articles: ArticleRepository,
     private val enricher: ArticleEnricher,
     private val clock: () -> Long = { System.currentTimeMillis() },
 ) {
-    private val recentFailures = mutableMapOf<Long, Long>()
+    private val lastAttempt = mutableMapOf<Long, Long>()
 
     suspend fun ensurePreview(article: ArticleEntity) {
-        if (!article.summary.isNullOrBlank() && !article.imageUrl.isNullOrBlank()) return
-        val failedAt = recentFailures[article.id]
-        if (failedAt != null && clock() - failedAt < FAILURE_COOLDOWN_MS) return
+        val currentSummaryLength = article.summary?.length ?: 0
+        val hasGoodSummary = currentSummaryLength >= GOOD_SUMMARY_LENGTH
+        if (hasGoodSummary && !article.imageUrl.isNullOrBlank()) return
 
-        val enriched = enricher.fetch(article.link, article.resolvedLink)
-        if (enriched == null) {
-            recentFailures[article.id] = clock()
-            return
+        val attemptedAt = lastAttempt[article.id]
+        if (attemptedAt != null && clock() - attemptedAt < ATTEMPT_COOLDOWN_MS) return
+        lastAttempt[article.id] = clock()
+
+        val enriched = enricher.fetch(article.link, article.resolvedLink) ?: return
+
+        // Only replace an existing summary when the new one is meaningfully longer —
+        // otherwise keep what the feed (or earlier enrichment) gave us.
+        val candidateSummary = enriched.description?.takeIf { it.isNotBlank() }
+        val summary = when {
+            candidateSummary == null -> null
+            currentSummaryLength == 0 -> candidateSummary
+            candidateSummary.length > currentSummaryLength + SUMMARY_UPGRADE_MARGIN -> candidateSummary
+            else -> null
         }
-        val summary = article.summary?.takeIf { it.isNotBlank() } ?: enriched.description
         val imageUrl = article.imageUrl?.takeIf { it.isNotBlank() } ?: enriched.imageUrl
         val resolvedUrl = article.resolvedLink?.takeIf { it.isNotBlank() } ?: enriched.resolvedUrl
-        if (summary == article.summary && imageUrl == article.imageUrl && resolvedUrl == article.resolvedLink) return
+
+        if (summary == null && imageUrl == article.imageUrl && resolvedUrl == article.resolvedLink) return
         articles.updatePreview(article.id, summary, imageUrl, resolvedUrl)
-        recentFailures.remove(article.id)
     }
 
     private companion object {
-        const val FAILURE_COOLDOWN_MS = 10L * 60L * 1000L
+        const val GOOD_SUMMARY_LENGTH = 200
+        const val SUMMARY_UPGRADE_MARGIN = 20
+        const val ATTEMPT_COOLDOWN_MS = 10L * 60L * 1000L
     }
 }

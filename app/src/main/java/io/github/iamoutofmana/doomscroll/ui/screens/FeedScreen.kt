@@ -192,19 +192,21 @@ fun FeedScreen(
                     ) {
                         items(groups, key = { it.primary.id }) { group ->
                             val dismissState = rememberSwipeToDismissBoxState(
-                                confirmValueChange = { value ->
-                                    if (value == SwipeToDismissBoxValue.StartToEnd) {
-                                        onHideWithUndo(group.primary.id)
-                                        true
-                                    } else {
-                                        false
-                                    }
-                                },
+                                confirmValueChange = { it == SwipeToDismissBoxValue.StartToEnd },
                             )
+                            // Hide only after the dismiss animation completes — hiding mid-swipe
+                            // removes the row while it is still moving and feels like a catch.
+                            LaunchedEffect(dismissState.currentValue) {
+                                if (dismissState.currentValue == SwipeToDismissBoxValue.StartToEnd) {
+                                    onHideWithUndo(group.primary.id)
+                                }
+                            }
                             SwipeToDismissBox(
                                 state = dismissState,
+                                modifier = Modifier.animateItem(),
                                 enableDismissFromStartToEnd = true,
                                 enableDismissFromEndToStart = false,
+                                gesturesEnabled = dismissState.currentValue == SwipeToDismissBoxValue.Settled,
                                 backgroundContent = { SwipeHideBackground(dismissState) },
                             ) {
                                 ArticleCard(

@@ -187,7 +187,7 @@ class SyncEngine(
     }
 
     private companion object {
-        const val SUMMARY_MAX = 300
+        const val SUMMARY_MAX = 400
         const val PRUNE_DAYS = 30
         const val RESOLVE_CAP = 15
         const val RESOLVE_FAILURE_LIMIT = 3
