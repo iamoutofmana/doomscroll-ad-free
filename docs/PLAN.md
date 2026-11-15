@@ -289,7 +289,7 @@ FreshRSS/Miniflux sync · Mastodon sources · "news near me" geo feed · multi-w
     - [x] Summaries now extract **article body paragraphs** (jsoup, junk-filtered, up to 3 paragraphs/600 chars) and prefer substantive text over headline-echoing `og:description`
     - [x] Old short summaries auto-upgrade on next expand (only replaced when meaningfully longer)
     - [x] Smoother swipe: hide fires **after** the dismiss animation completes, dismissed rows aren't re-grabbable, list reflow animated (`animateItem()`)
-    - [x] Tests: 76 passing
+    - [x] Tests: 76 passing; CI green (run 43734319164 — 1m24s)
 - [ ] 3 days of daily driving without Samsung's media page → **Phase 1 DoD** (in progress — collecting annoyances for Phase 2)
 
 ---
