@@ -285,6 +285,11 @@ FreshRSS/Miniflux sync · Mastodon sources · "news near me" geo feed · multi-w
     - [x] Story grouping: near-duplicate headlines cluster into one card with "Also covered by" list (title-similarity ≥ 0.5, 48h window)
     - [x] Hidden-story memory: hidden titles skipped at ingest for 30 days — hidden stories never reappear
     - [x] Tests: 74 passing; CI green (run 43733586963 — 2m37s)
+- [x] **Phase 1.7 UX feedback (Nov 15, 2026):**
+    - [x] Summaries now extract **article body paragraphs** (jsoup, junk-filtered, up to 3 paragraphs/600 chars) and prefer substantive text over headline-echoing `og:description`
+    - [x] Old short summaries auto-upgrade on next expand (only replaced when meaningfully longer)
+    - [x] Smoother swipe: hide fires **after** the dismiss animation completes, dismissed rows aren't re-grabbable, list reflow animated (`animateItem()`)
+    - [x] Tests: 76 passing
 - [ ] 3 days of daily driving without Samsung's media page → **Phase 1 DoD** (in progress — collecting annoyances for Phase 2)
 
 ---
