@@ -88,7 +88,7 @@ jobs:
           keyalias: $KEY_ALIAS
           keypass: $KEYSTORE_PASS
           EOF
-          chmod 600 config.yml "$KEYSTORE"
+          chmod 600 fdroid/config.yml "$KEYSTORE"
 
       - name: Build repo index
         run: |
