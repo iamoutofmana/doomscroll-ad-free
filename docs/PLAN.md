@@ -339,7 +339,8 @@ FreshRSS/Miniflux sync · Mastodon sources · "news near me" geo feed · multi-w
     - [x] Submission walkthrough written: `docs/release/fdroid-submission.md` (GitLab MR steps, likely reviewer requests, IzzyOnDroid lane)
     - [ ] Submit fdroiddata MR (requires the maintainer's GitLab account)
     - [x] **F-Droid MR submitted (Nov 16, 2026):** https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57695 — branch `doomscroll-ad-free-add` head `1194cb9e0`; metadata uses the full commit hash, AuthorName, and reproducible-build fields (Binaries + AllowedAPKSigningKeys)
-    - [ ] Await fdroiddata pipeline + reviewer feedback; respond with fixes (draft replies here)
+    - [!] Fork pipeline blocked by GitLab identity verification ("Verify your identity to run this pipeline", 0 jobs). Per F-Droid template guidance: no phone/credit-card verification submitted; MR comment posted requesting maintainer-triggered CI
+    - [ ] Await fdroiddata CI (maintainer-triggered) + reviewer feedback; draft fixes here
     - [ ] Optional: Play Store track; signatures differ per distribution (uninstall to switch)
     - [ ] On-device widget visual pass (add via launcher, check taps/sizing on One UI) — user action
     - [ ] OPML import/export — next session
