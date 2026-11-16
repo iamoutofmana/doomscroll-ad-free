@@ -82,9 +82,10 @@ jobs:
           repo_description: Ad-free, open-source feed reader for Android - Google News, RSS, YouTube, Reddit, Lemmy and Hacker News in one clean feed, with an in-app reader and widgets.
           repo_icon: repo-icon.png
           archive_older: 0
+          accepted_formats: ['yml']
           keystore: $KEYSTORE
           keystorepass: $KEYSTORE_PASS
-          keyalias: $KEY_ALIAS
+          repo_keyalias: $KEY_ALIAS
           keypass: $KEYSTORE_PASS
           EOF
           chmod 600 fdroid/config.yml "$KEYSTORE"
