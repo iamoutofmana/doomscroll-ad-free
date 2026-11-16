@@ -1,0 +1,66 @@
+# Self-hosted F-Droid repo
+
+A developer-hosted, F-Droid-compatible repository that serves the **same signed APK** as
+GitHub Releases, but with automatic updates in F-Droid / Droid-ify / Neo Store.
+
+| | |
+|---|---|
+| **Repo URL** | `https://iamoutofmana.github.io/doomscroll-ad-free/` |
+| **Repo signing key SHA-256** | `93:93:39:66:83:61:09:CB:F2:33:1F:E9:9F:E9:51:3E:ED:04:8C:F0:A9:F4:49:D2:AA:D6:94:31:3C:79:20:60` |
+| **Hosting** | GitHub Pages, deployed by `.github/workflows/fdroid-repo.yml` |
+| **APK signer** | Project release key (`B4:F9:…:EC`), same as GitHub Releases |
+| **Index signer** | Dedicated repo key (`fdroid-repo.jks`), kept outside the repo |
+
+## How it works
+
+1. A GitHub Release is published (or the workflow is dispatched manually).
+2. CI downloads `app-release.apk` from the latest release.
+3. It copies the app's fastlane metadata + landing page into `fdroid/repo`.
+4. `fdroid update` scans the APK, builds `index-v1.jar` / `index-v2.json`, and signs the
+   index with the repo key from secrets.
+5. `fdroid verify` checks the APK against `AllowedAPKSigningKeys`.
+6. The `fdroid/repo` directory is deployed to GitHub Pages via `actions/deploy-pages`.
+
+Each deploy publishes exactly one APK (latest release); `archive_older: 0` keeps old
+versions out of the served repo. Installed clients still see the new version because the
+`versionCode` increases.
+
+## Secrets (already configured)
+
+| Secret | Purpose |
+|---|---|
+| `FDROID_REPO_KEYSTORE_B64` | base64 of `fdroid-repo.jks` |
+| `FDROID_REPO_KEYSTORE_PASS` | keystore/key password |
+| `FDROID_REPO_KEY_ALIAS` | `doomscroll-repo` |
+
+Local backup (NOT in git):
+
+```
+C:\Users\Rob\Documents\Default Project\doomscroll-release\
+  fdroid-repo.jks
+  fdroid-repo-key.properties   ← password, alias, fingerprint
+```
+
+**Back up both files.** If the repo key is lost, every user must remove and re-add the
+repo (the client pins the old fingerprint). If the password is lost, the key is unusable.
+
+## Manual operations
+
+- **Rebuild the repo for the latest release:** Actions → *F-Droid repo* → *Run workflow*,
+  or `gh workflow run fdroid-repo.yml`.
+- **Check it is live:** `curl -sI https://iamoutofmana.github.io/doomscroll-ad-free/index-v1.jar`
+  (expect `200`), and open the landing page in a browser.
+- **Verify the served index signature locally:** download `index-v1.jar` and check the
+  signing certificate's SHA-256 equals the fingerprint above.
+- **Rotate the repo key:** generate a new keystore, update the three secrets, deploy, then
+  tell users to remove/re-add the repo (fingerprint changes). Rotate only if compromised —
+  it is disruptive.
+
+## Notes
+
+- GitHub Pages soft limits (≈1 GB site, 100 GB/month bandwidth) are far above the ~3 MB
+  APK this repo serves.
+- The APK signature stays the project release key, so moving between GitHub Releases and
+  this repo is a normal update. Moving to an official F-Droid build later requires an
+  uninstall (different signing key).
+- This repo is not reviewed or endorsed by F-Droid; the fingerprint is the trust anchor.

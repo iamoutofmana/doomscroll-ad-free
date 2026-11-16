@@ -1,0 +1,29 @@
+# Metadata for the self-hosted F-Droid repo (binary repo: we ship the signed
+# GitHub Release APK, so no Builds: block is needed).
+Categories:
+  - Internet
+  - Reading
+License: GPL-3.0-or-later
+AuthorName: iamoutofmana
+WebSite: https://github.com/iamoutofmana/doomscroll-ad-free
+SourceCode: https://github.com/iamoutofmana/doomscroll-ad-free
+IssueTracker: https://github.com/iamoutofmana/doomscroll-ad-free/issues
+Changelog: https://github.com/iamoutofmana/doomscroll-ad-free/releases
+
+Summary: Ad-free feed reader for your own sources
+Description: |-
+  Doomscroll Ad Free is an ad-free, open-source feed reader for Android that replaces the
+  OEM "media page" with your own sources: Google News topics and keyword searches, any
+  RSS/Atom/JSON feed, YouTube channels, Reddit, Lemmy and Hacker News. These are aggregated
+  into one clean scrolling feed, a built-in reader extracts full articles without publisher
+  ads, and home-screen widgets mimic a media page.
+
+  No accounts, no ads, no sponsored items, no analytics and no tracking. Network access is
+  limited to the feeds and article pages you choose, everything stays on the device, and
+  the app is licensed GPL-3.0-or-later.
+
+  This repository is hosted by the app's developer and distributes the same APK that is
+  published on GitHub Releases, signed with the project release key.
+
+AllowedAPKSigningKeys:
+  - B4:F9:52:1D:34:02:5B:B1:45:8A:89:25:1E:1E:31:18:2B:67:8C:3B:85:E5:80:24:25:9D:71:BD:CF:0D:AD:EC

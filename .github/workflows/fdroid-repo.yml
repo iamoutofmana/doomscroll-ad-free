@@ -1,0 +1,125 @@
+name: F-Droid repo
+
+# Builds the self-hosted F-Droid repository index from the signed APK attached to the
+# latest GitHub Release and publishes it to GitHub Pages.
+#
+# Repo URL: https://iamoutofmana.github.io/doomscroll-ad-free/
+# The repo signing key lives in repository secrets (see docs/release/self-hosted-repo.md).
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: fdroid-repo
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install fdroidserver and Android build-tools
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install fdroidserver
+          BUILD_TOOLS=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          echo "$BUILD_TOOLS" >> "$GITHUB_PATH"
+          echo "Using build-tools: $BUILD_TOOLS"
+
+      - name: Restore repo signing key
+        env:
+          KEYSTORE_B64: ${{ secrets.FDROID_REPO_KEYSTORE_B64 }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/fdroid"
+          printf '%s' "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/fdroid/repo.jks"
+
+      - name: Download release APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          mkdir -p fdroid/repo
+          if [ -n "$RELEASE_TAG" ]; then
+            gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
+              --pattern 'app-release.apk' --dir fdroid/repo --clobber
+          else
+            gh release download --repo "$GITHUB_REPOSITORY" \
+              --pattern 'app-release.apk' --dir fdroid/repo --clobber
+          fi
+
+      - name: Add app metadata and landing page
+        run: |
+          mkdir -p fdroid/metadata/io.github.iamoutofmana.doomscroll
+          cp -r fastlane/metadata/android/en-US fdroid/metadata/io.github.iamoutofmana.doomscroll/
+          cp fastlane/metadata/android/en-US/images/icon.png fdroid/repo-icon.png
+          cp .github/fdroid/index.html fdroid/repo/index.html
+          touch fdroid/repo/.nojekyll
+
+      - name: Write fdroid config
+        env:
+          KEYSTORE: ${{ runner.temp }}/fdroid/repo.jks
+          KEYSTORE_PASS: ${{ secrets.FDROID_REPO_KEYSTORE_PASS }}
+          KEY_ALIAS: ${{ secrets.FDROID_REPO_KEY_ALIAS }}
+        run: |
+          cat > fdroid/config.yml <<EOF
+          repo_url: https://iamoutofmana.github.io/doomscroll-ad-free/
+          repo_name: Doomscroll Ad Free
+          repo_description: Ad-free, open-source feed reader for Android - Google News, RSS, YouTube, Reddit, Lemmy and Hacker News in one clean feed, with an in-app reader and widgets.
+          repo_icon: repo-icon.png
+          archive_older: 0
+          keystore: $KEYSTORE
+          keystorepass: $KEYSTORE_PASS
+          keyalias: $KEY_ALIAS
+          keypass: $KEYSTORE_PASS
+          EOF
+
+      - name: Build repo index
+        run: |
+          cd fdroid
+          fdroid update --verbose
+
+      - name: Verify APK signatures
+        run: |
+          cd fdroid
+          fdroid verify --verbose
+
+      - name: Show fingerprint
+        run: |
+          cd fdroid
+          keytool -list -v -keystore "${{ runner.temp }}/fdroid/repo.jks" \
+            -storepass "${{ secrets.FDROID_REPO_KEYSTORE_PASS }}" \
+            | grep -E 'SHA256:|Alias name:' || true
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: fdroid/repo
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

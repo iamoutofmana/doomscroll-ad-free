@@ -38,13 +38,35 @@ Full plan: [`docs/PLAN.md`](docs/PLAN.md)
 
 ## Install
 
-**v1.1.0 is released.** Download the signed APK from
-[GitHub Releases](https://github.com/iamoutofmana/doomscroll-ad-free/releases) and sideload it
-(Android 8+). F-Droid inclusion is pending the project-age requirement (3 months of
-maintenance before first inclusion); IzzyOnDroid submission is planned.
+**v1.1.0 is released.**
 
-> **Signing note:** GitHub builds are signed with the project key; F-Droid builds use
-> F-Droid's key. Pick one distribution and stick with it — switching requires uninstalling.
+### With automatic updates (recommended)
+
+Add the developer-hosted F-Droid repo to **F-Droid**, **Droid-ify** or **Neo Store**:
+
+1. Settings → Repositories → **+**
+2. Paste `https://iamoutofmana.github.io/doomscroll-ad-free/`
+3. Search for **Doomscroll** and install — future updates arrive automatically.
+
+Repo signing key SHA-256:
+`93:93:39:66:83:61:09:CB:F2:33:1F:E9:9F:E9:51:3E:ED:04:8C:F0:A9:F4:49:D2:AA:D6:94:31:3C:79:20:60`
+
+> This repo is run by the project, not by F-Droid, and is not reviewed by them; the
+> fingerprint above is the trust anchor. It serves the same release-key-signed APK as
+> GitHub Releases, so switching between the two needs no uninstall.
+
+### Manual APK
+
+Download the signed APK from
+[GitHub Releases](https://github.com/iamoutofmana/doomscroll-ad-free/releases) and sideload it
+(Android 8+).
+
+Official F-Droid inclusion is pending their 3-month maintenance requirement; the
+self-hosted repo above fills the gap meanwhile.
+
+> **Signing note:** GitHub/self-hosted builds are signed with the project key; an official
+> F-Droid build uses F-Droid's key. Pick one distribution and stick with it — switching
+> from the project-signed APK to an F-Droid-signed build requires uninstalling.
 
 ### Replacing your media page (once the widget ships — Phase 2)
 

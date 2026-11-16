@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Doomscroll Ad Free — F-Droid repo</title>
+<style>
+  :root { color-scheme: dark; }
+  body {
+    margin: 0; padding: 48px 20px;
+    background: #1C1226; color: #FFF6E9;
+    font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 680px; margin: 0 auto; }
+  h1 { font-size: 1.9rem; line-height: 1.2; margin: 0 0 8px; }
+  h1 span { color: #FF5C7A; }
+  .tag { color: #C6FF4A; font-weight: 600; letter-spacing: .02em; }
+  p { margin: 0 0 14px; }
+  ol { padding-left: 22px; }
+  li { margin: 0 0 10px; }
+  code, .mono {
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    background: rgba(255,246,233,.09);
+    border: 1px solid rgba(255,246,233,.16);
+    border-radius: 8px;
+    padding: 2px 6px;
+    word-break: break-all;
+  }
+  .card {
+    background: rgba(255,246,233,.05);
+    border: 1px solid rgba(255,246,233,.14);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin: 22px 0;
+  }
+  a { color: #C6FF4A; }
+  .muted { color: rgba(255,246,233,.66); font-size: .92rem; }
+  .fingerprint { display: block; margin-top: 8px; font-size: .84rem; }
+</style>
+</head>
+<body>
+<main>
+  <p class="tag">SELF-HOSTED F-DROID REPO</p>
+  <h1><span>Doomscroll</span> Ad Free</h1>
+  <p>Ad-free, open-source feed reader for Android. This is the developer-hosted
+     F-Droid-compatible repository — the same signed APK that is published on GitHub Releases,
+     delivered with automatic updates.</p>
+
+  <div class="card">
+    <p><strong>Repo address</strong></p>
+    <code>https://iamoutofmana.github.io/doomscroll-ad-free/</code>
+    <p class="fingerprint muted">Repo signing key SHA-256:<br>
+      <span class="mono">93:93:39:66:83:61:09:CB:F2:33:1F:E9:9F:E9:51:3E:ED:04:8C:F0:A9:F4:49:D2:AA:D6:94:31:3C:79:20:60</span>
+    </p>
+  </div>
+
+  <h2>Add it to F-Droid</h2>
+  <ol>
+    <li>Open <strong>F-Droid</strong> (or Droid-ify / Neo Store) → <strong>Settings → Repositories</strong>.</li>
+    <li>Tap <strong>+</strong> and paste the repo address above.</li>
+    <li>Go to the <strong>Latest</strong> tab, search for <strong>Doomscroll</strong>, and install.</li>
+  </ol>
+  <p class="muted">Verify the fingerprint shown by the client matches the one above. After the
+     first add, updates arrive automatically — no more manual APK downloads.</p>
+
+  <div class="card">
+    <p><strong>Good to know</strong></p>
+    <ul>
+      <li>This repo is run by the app's developer, not by F-Droid. It is not reviewed by F-Droid.</li>
+      <li>APKs are signed with the project release key, so updates from this repo and from
+          GitHub Releases are interchangeable — no uninstall needed.</li>
+      <li>An official F-Droid listing (once available) uses F-Droid's key; switching to that
+          build requires uninstalling this one.</li>
+    </ul>
+  </div>
+
+  <p class="muted">Source &amp; releases:
+    <a href="https://github.com/iamoutofmana/doomscroll-ad-free">github.com/iamoutofmana/doomscroll-ad-free</a> ·
+    License: GPL-3.0-or-later
+  </p>
+</main>
+</body>
+</html>
