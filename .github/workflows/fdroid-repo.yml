@@ -93,6 +93,14 @@ jobs:
       - name: Build repo index
         run: |
           cd fdroid
+          ls -la metadata | head -20
+          python - <<'PY'
+          from fdroidserver import metadata
+          apps = metadata.read_metadata()
+          print("APPS:", list(apps.keys()))
+          for k, v in apps.items():
+              print(k, "->", v.get("Summary", "")[:60], "| allowed:", v.get("AllowedAPKSigningKeys"))
+          PY
           fdroid update --verbose
 
       - name: Verify APK signatures
