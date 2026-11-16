@@ -351,7 +351,7 @@ FreshRSS/Miniflux sync · Mastodon sources · "news near me" geo feed · multi-w
     - [!] **MR #57695 closed by maintainer `linsui` (Nov 16, 19:06 UTC):** "This app doesn't meet the policy that it needs to be maintained for more than 3 months." — a project-age gate, not a code/metadata issue. **Re-submission window opens ~Feb 16, 2027.** Keep shipping tagged releases until then (auto-update picks up new tags once included); metadata draft already refreshed to 1.1.0
     - [ ] Re-submit fdroiddata MR after 2027-02-16 (new branch, current metadata draft, request maintainer-triggered CI again)
     - [x] **Release v1.1.0 published (Nov 16):** reader structure (headings/bullets/images), preview prefetch 10, blocked-publisher UX, reader back navigation; signed APK + notes on GitHub
-    - [ ] Consider IzzyOnDroid submission (no project-age gate; picks up GitHub Releases)
+    - [!] **IzzyOnDroid ruled out (checked Nov 16):** tracking moved to Codeberg (`codeberg.org/IzzyOnDroid/repodata/issues`), no signed-in account here; and their App Inclusion Policy **explicitly rejects AI-generated / vibe-coded apps** — an honest request would be rejected, so none was posted. Self-hosted F-Droid repo (GitHub Pages) is the viable no-gate option
     - [ ] Optional: Play Store track; signatures differ per distribution (uninstall to switch)
     - [ ] On-device widget visual pass (add via launcher, check taps/sizing on One UI) — user action
     - [ ] OPML import/export — next session

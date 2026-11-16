@@ -25,7 +25,8 @@ problem. **Do not resubmit before ~February 16, 2027.** In the meantime:
 - keep tagging releases (F-Droid's `UpdateCheckMode: Tags` will pick them up once the app is
   included);
 - keep `docs/release/fdroid-metadata.yml` in sync with the latest release (already at 1.1.0);
-- consider IzzyOnDroid (below) for distribution without the age gate.
+- consider a self-hosted F-Droid repo (GitHub Pages) for distribution without the age gate;
+  IzzyOnDroid is **not** an option for this project (see below)
 
 
 ## Step-by-step (≈10 minutes)
@@ -59,13 +60,32 @@ problem. **Do not resubmit before ~February 16, 2027.** In the meantime:
 6. **After merge**: the build lands in the next F-Droid index update — usually days to
    a couple of weeks. Then the app is installable from the F-Droid client.
 
-## Optional faster lane: IzzyOnDroid
+## IzzyOnDroid — NOT ELIGIBLE (checked Nov 16, 2026)
 
-IzzyOnDroid repackages releases sooner. Submit by opening an issue at
-https://gitlab.com/IzzyOnDroid/repo/-/issues with:
-- App name, source repo, and the GitHub release URL
-  (https://github.com/iamoutofmana/doomscroll-ad-free/releases/tag/v1.0.0)
-- Note that fastlane metadata is already in the repo (they read it automatically)
+Two blockers, one of them fundamental:
+
+1. **Policy: AI-generated code is explicitly rejected.** Their
+   [App Inclusion Policy](https://izzyondroid.org/docs/general/AppInclusionPolicy/) states:
+   *"We are strongly opposed to apps which are fully or in part created by generative AI
+   tools… Vibe-coded apps will be rejected… the code itself should be free of it.
+   Any lack of transparency discovered by us, can lead to the project being degraded to
+   rejected state."*
+   This project's code was written with substantial AI assistance, so an honest request
+   would be rejected by policy, and a request that hid it would violate that policy.
+   **Do not submit unless the code has been genuinely rewritten without AI involvement.**
+2. **Mechanics: no account / no session.** App-inclusion requests moved from GitLab to
+   Codeberg: https://codeberg.org/IzzyOnDroid/repodata/issues
+   (GitLab repo issues now say the tracker moved). Posting requires a Codeberg account and
+   an interactive sign-in; there is no signed-in session on this machine.
+
+If the project ever becomes eligible, the request goes to
+`https://codeberg.org/IzzyOnDroid/repodata/issues/new?template=app-inclusion-request.yaml`
+with source URL, license, categories (Internet, Reading), summary/description, build
+instructions, and the AI-usage fields filled honestly.
+
+F-Droid itself has **no AI clause** in its inclusion policy — its only gate for this app is
+the 3-month maintenance requirement.
+
 
 ## Distribution warning (put this in the README if not already)
 
