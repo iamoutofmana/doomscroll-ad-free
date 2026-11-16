@@ -27,6 +27,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
@@ -101,6 +102,7 @@ fun FeedScreen(
                 stats.newArticles > 0 -> context.getString(R.string.synced_new, stats.newArticles)
                 else -> context.getString(R.string.synced_up_to_date)
             }
+            snackbarHostState.currentSnackbarData?.dismiss()
             snackbarHostState.showSnackbar(msg)
             // Warm previews for the top of the feed so images/summaries appear without a tap.
             runCatching {
@@ -125,9 +127,14 @@ fun FeedScreen(
         if (expandedId == id) expandedId = null
         scope.launch {
             container.articleRepository.hide(id)
+            // Replace any previous bar instead of queueing them, and auto-dismiss this one:
+            // an action label otherwise defaults to SnackbarDuration.Indefinite.
+            snackbarHostState.currentSnackbarData?.dismiss()
             val result = snackbarHostState.showSnackbar(
                 message = context.getString(R.string.hidden_snackbar),
                 actionLabel = context.getString(R.string.undo),
+                withDismissAction = true,
+                duration = SnackbarDuration.Long,
             )
             if (result == SnackbarResult.ActionPerformed) container.articleRepository.unhide(id)
         }

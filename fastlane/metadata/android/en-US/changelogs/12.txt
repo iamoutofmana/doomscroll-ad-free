@@ -1,0 +1,4 @@
+Fix for the "Story hidden" bar.
+
+- The "Story hidden - Undo" bar now dismisses itself after a few seconds (or via its close button) instead of staying on screen
+- Hiding several stories in a row replaces the previous bar rather than stacking them
