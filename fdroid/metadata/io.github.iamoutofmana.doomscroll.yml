@@ -26,4 +26,4 @@ Description: |-
   published on GitHub Releases, signed with the project release key.
 
 AllowedAPKSigningKeys:
-  - B4:F9:52:1D:34:02:5B:B1:45:8A:89:25:1E:1E:31:18:2B:67:8C:3B:85:E5:80:24:25:9D:71:BD:CF:0D:AD:EC
+  - B4F9521D34025BB1458A89251E1E31182B678C3B85E58024259D71BDCF0DADEC
