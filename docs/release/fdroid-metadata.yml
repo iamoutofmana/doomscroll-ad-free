@@ -2,14 +2,14 @@
 #   metadata/io.github.iamoutofmana.doomscroll.yml
 # Submission guide: https://f-droid.org/en/docs/Submitting_to_F-Droid_Quick_Start_Guide/
 #
-# F-Droid builds from source on its own buildservers and signs with the F-Droid key.
-# The release signing config in app/build.gradle.kts is skipped automatically when
-# keystore.properties is absent (which is the case on the buildserver).
+# F-Droid builds from source; reproducible builds are enabled so the developer-signed
+# APK from GitHub Releases is what gets published (users can switch channels freely).
 
 Categories:
   - Internet
   - Reading
 License: GPL-3.0-or-later
+AuthorName: iamoutofmana
 WebSite: https://github.com/iamoutofmana/doomscroll-ad-free
 SourceCode: https://github.com/iamoutofmana/doomscroll-ad-free
 IssueTracker: https://github.com/iamoutofmana/doomscroll-ad-free/issues
@@ -21,10 +21,15 @@ Repo: https://github.com/iamoutofmana/doomscroll-ad-free.git
 Builds:
   - versionName: 1.0.0
     versionCode: 10
-    commit: v1.0.0
+    commit: 0eea30975d9efec93d2a6021ebc8502f232600b9
     subdir: app
     gradle:
       - yes
+
+AllowedAPKSigningKeys:
+  - B4:F9:52:1D:34:02:5B:B1:45:8A:89:25:1E:1E:31:18:2B:67:8C:3B:85:E5:80:24:25:9D:71:BD:CF:0D:AD:EC
+
+Binaries: https://github.com/iamoutofmana/doomscroll-ad-free/releases/download/v%v/app-release.apk
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
@@ -33,8 +38,10 @@ CurrentVersionCode: 10
 
 MaintainerNotes: |
   App ID: io.github.iamoutofmana.doomscroll
-  Release keystore lives outside the repository (GitHub Releases are signed upstream;
-  F-Droid builds are signed by F-Droid — users cannot switch distribution without
-  uninstalling).
-  Fastlane metadata and phone screenshots are included in the repo at
-  fastlane/metadata/android/en-US/.
+  Reproducible builds are enabled: the GitHub Release APK is built from the same
+  commit with the project's release key; the signing certificate SHA-256 is listed
+  in AllowedAPKSigningKeys.
+  Fastlane metadata (title, descriptions, changelog, icon, phone screenshots) lives
+  in the upstream repo at fastlane/metadata/android/en-US/.
+  The app has no analytics, no tracking, no accounts and no ads; network access is
+  limited to user-configured feeds and article pages requested for previews/reader.
