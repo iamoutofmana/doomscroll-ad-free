@@ -59,7 +59,7 @@ class EnrichmentService(
  */
 suspend fun EnrichmentService.prefetch(
     groups: List<io.github.iamoutofmana.doomscroll.data.repo.StoryClusterer.StoryGroup>,
-    limit: Int = 6,
+    limit: Int = 10,
 ) {
     groups
         .asSequence()

@@ -4,16 +4,20 @@ import io.github.iamoutofmana.doomscroll.data.db.ArticleEntity
 import io.github.iamoutofmana.doomscroll.data.network.ArticleTextExtractor
 import io.github.iamoutofmana.doomscroll.data.network.GnRedirectResolver
 import io.github.iamoutofmana.doomscroll.data.network.HttpBodies
+import io.github.iamoutofmana.doomscroll.data.network.ReaderBlock
 import io.github.iamoutofmana.doomscroll.domain.AppMetadata
 import io.github.iamoutofmana.doomscroll.domain.links.UrlSafety
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.Request
 
 /**
- * Reader mode (Phase 2): resolves the publisher URL, extracts readable article text,
- * caches it in the local DB, and hands paragraphs to the UI. No WebView, no ads.
+ * Reader mode (Phase 2.1): resolves the publisher URL, extracts structured article blocks
+ * (headings, paragraphs, bullets, images), caches them as JSON in the local DB, and hands
+ * them to the UI. No WebView, no ads.
  */
 class ReaderService(
     private val client: OkHttpClient,
@@ -24,7 +28,7 @@ class ReaderService(
         data class Content(
             val article: ArticleEntity,
             val title: String?,
-            val paragraphs: List<String>,
+            val blocks: List<ReaderBlock>,
         ) : Result
 
         data class Failed(
@@ -38,7 +42,10 @@ class ReaderService(
 
         val cached = article.readerText
         if (!cached.isNullOrBlank()) {
-            return Result.Content(article, article.title, cached.split("\n\n").filter { it.isNotBlank() })
+            val blocks = decodeBlocks(cached)
+            if (!blocks.isNullOrEmpty()) {
+                return Result.Content(article, article.title, blocks)
+            }
         }
 
         val target = resolveTarget(article)
@@ -50,11 +57,26 @@ class ReaderService(
         return try {
             val html = withContext(Dispatchers.IO) { fetchHtml(target) }
                 ?: return Result.Failed(article, "Couldn't download the page")
+
             val extracted = ArticleTextExtractor.extract(html, target)
-                ?: return Result.Failed(article, "Couldn't find readable text on this page")
-            val text = extracted.paragraphs.joinToString("\n\n")
-            articles.saveReaderText(article.id, text)
-            Result.Content(article, extracted.title ?: article.title, extracted.paragraphs)
+            if (extracted == null) {
+                val paywalled = PAYWALL_MARKERS.any { marker -> html.contains(marker, ignoreCase = true) }
+                return Result.Failed(
+                    article,
+                    if (paywalled) {
+                        "This article looks like it's behind a paywall — open the original to read it there."
+                    } else {
+                        "Couldn't find readable text on this page"
+                    },
+                )
+            }
+
+            val blocks = extracted.blocks
+            articles.saveReaderText(
+                article.id,
+                JSON.encodeToString(blocks),
+            )
+            Result.Content(article, extracted.title ?: article.title, blocks)
         } catch (e: Exception) {
             Result.Failed(article, e.message ?: "Extraction failed")
         }
@@ -83,7 +105,25 @@ class ReaderService(
         }
     }
 
+    private fun decodeBlocks(raw: String): List<ReaderBlock>? {
+        if (!raw.trimStart().startsWith("[")) return null
+        return runCatching {
+            JSON.decodeFromString<List<ReaderBlock>>(raw)
+        }.getOrNull()
+    }
+
     private companion object {
         const val MAX_ARTICLE_BYTES = 2 * 1024 * 1024
+        val JSON = Json { ignoreUnknownKeys = true }
+
+        val PAYWALL_MARKERS = listOf(
+            "subscribe to continue",
+            "subscribe to read",
+            "already a subscriber",
+            "sign in to continue",
+            "create a free account",
+            "only available to subscribers",
+            "for subscribers only",
+        )
     }
 }

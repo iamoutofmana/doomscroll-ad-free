@@ -325,6 +325,11 @@ FreshRSS/Miniflux sync · Mastodon sources · "news near me" geo feed · multi-w
     - [x] Brand mark in-product: doom-cloud tile beside the title, in the empty state, and in the help header (icon and in-app logo share one vector); title shows "Doomscroll" without truncation
     - [x] Top-bar decluttered: Info + Refresh icons, "Mark all read" and "Filtered (n)" moved to an overflow menu
     - [x] Verified on device via screenshots (help sheet, brand sheet, top bar)
+- [x] **v1.1 update work (from live feedback, Nov 16):**
+    - [x] Reader renders structured blocks now: styled headings, bullets, hero + inline images (Coil), better spacing; cached as JSON, extraction-cache version bumped
+    - [x] Paywall-aware reader failures ("behind a paywall — open the original") + explicit **Open original** action in the error state and in the expanded card when no summary exists
+    - [x] More card images: preview prefetch raised to top 10 and runs whenever the top of the feed changes (cooldown-protected)
+    - [x] Tests: 107 passing; pending device verification (phone disconnected at build time)
 - [x] **Release pass (Nov 15, 2026):**
     - [x] Release keystore generated (4096-bit RSA, 10,000 days, alias `doomscroll`) — stored outside the repo at `doomscroll-release/` with backup instructions; `keystore.properties` gitignored
     - [x] Gradle release signing config wired (auto-loads `keystore.properties`); version bumped to **1.0.0 (versionCode 10)**

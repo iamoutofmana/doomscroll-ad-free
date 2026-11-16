@@ -127,6 +127,7 @@
     <string name="rules_delete">Delete rule</string>
 
     <string name="article_open_browser">Open in browser</string>
+    <string name="article_open_original">Open original</string>
 
     <string name="help_open">Help</string>
     <string name="help_sources_title">Add sources</string>

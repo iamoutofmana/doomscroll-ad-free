@@ -145,6 +145,15 @@ fun FeedScreen(
         previewLoading = false
     }
 
+    // Keep the visible top of the feed rich: warm previews whenever the top items change.
+    // EnrichmentService throttles repeats per article, so this is cheap in steady state.
+    val topItemIds = groups.take(10).joinToString(",") { it.primary.id.toString() }
+    LaunchedEffect(topItemIds) {
+        if (groups.isNotEmpty()) {
+            runCatching { container.enrichment.prefetch(groups, limit = 10) }
+        }
+    }
+
     // Silent auto-sync when the app is opened with stale data (plan Appendix B).
     // Keyed on sources: the flow emits empty on first composition, so a one-shot
     // LaunchedEffect(Unit) would always miss the initial sync.
