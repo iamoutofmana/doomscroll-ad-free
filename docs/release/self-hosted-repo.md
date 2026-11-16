@@ -65,6 +65,12 @@ repo (the client pins the old fingerprint). If the password is lost, the key is 
 
 - **Rebuild the repo for the latest release:** Actions → *F-Droid repo* → *Run workflow*,
   or `gh workflow run fdroid-repo.yml`.
+- **Release-triggered deploy:** publishing a GitHub Release runs the workflow on the tag and
+  redeploys the repo automatically (verified with v1.1.1).
+- **Pages environment policy:** the `github-pages` environment must allow tag deployments,
+  otherwise the deploy job fails with *"Tag vX is not allowed to deploy to github-pages"*.
+  A `v*` tag policy is configured; to re-add it:
+  `gh api -X POST repos/iamoutofmana/doomscroll-ad-free/environments/github-pages/deployment-branch-policies -f name='v*' -f type=tag`
 - **Check it is live:** `curl -sI https://iamoutofmana.github.io/doomscroll-ad-free/repo/index-v1.jar`
   (expect `200`), and open the landing page at
   `https://iamoutofmana.github.io/doomscroll-ad-free/` in a browser.
