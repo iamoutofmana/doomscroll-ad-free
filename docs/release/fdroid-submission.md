@@ -5,11 +5,28 @@ F-Droid builds apps **from source** on its own build servers and signs them with
 absent, `./gradlew assembleRelease` succeeds and produces `app-release-unsigned.apk`.
 
 The only step that requires a human account is the merge request to
-[fdroiddata on GitLab](https://gitlab.com/fdroiddata). Everything else is prepared:
+[fdroiddata on GitLab](https://gitlab.com/fdroid/fdroiddata). Everything else is prepared:
 
 - `metadata/io.github.iamoutofmana.doomscroll.yml` ← copy from `docs/release/fdroid-metadata.yml`
 - Fastlane metadata + 4 phone screenshots in `fastlane/metadata/android/en-US/`
-- Tag `v1.0.0` pushed; Gradle wrapper executable; all dependencies FOSS
+- Tag `v1.1.0` pushed (metadata draft updated to 1.1.0 / versionCode 11); Gradle wrapper executable; all dependencies FOSS
+
+## Submission status (Nov 16, 2026)
+
+MR [!57695](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57695) was reviewed and
+**closed** by maintainer `linsui`:
+
+> Closing because: This app doesn't meet the policy that it needs to be maintained for more
+> than 3 months.
+
+This is a project-age gate applied to first-time submissions, not a code or metadata
+problem. **Do not resubmit before ~February 16, 2027.** In the meantime:
+
+- keep tagging releases (F-Droid's `UpdateCheckMode: Tags` will pick them up once the app is
+  included);
+- keep `docs/release/fdroid-metadata.yml` in sync with the latest release (already at 1.1.0);
+- consider IzzyOnDroid (below) for distribution without the age gate.
+
 
 ## Step-by-step (≈10 minutes)
 

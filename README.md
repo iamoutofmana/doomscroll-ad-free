@@ -38,9 +38,10 @@ Full plan: [`docs/PLAN.md`](docs/PLAN.md)
 
 ## Install
 
-**v1.0.0 is released.** Download the signed APK from
+**v1.1.0 is released.** Download the signed APK from
 [GitHub Releases](https://github.com/iamoutofmana/doomscroll-ad-free/releases) and sideload it
-(Android 8+). F-Droid submission is in progress.
+(Android 8+). F-Droid inclusion is pending the project-age requirement (3 months of
+maintenance before first inclusion); IzzyOnDroid submission is planned.
 
 > **Signing note:** GitHub builds are signed with the project key; F-Droid builds use
 > F-Droid's key. Pick one distribution and stick with it — switching requires uninstalling.

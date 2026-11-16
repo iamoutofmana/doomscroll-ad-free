@@ -348,7 +348,10 @@ FreshRSS/Miniflux sync · Mastodon sources · "news near me" geo feed · multi-w
     - [ ] Submit fdroiddata MR (requires the maintainer's GitLab account)
     - [x] **F-Droid MR submitted (Nov 16, 2026):** https://gitlab.com/fdroid/fdroiddata/-/merge_requests/57695 — branch `doomscroll-ad-free-add` head `1194cb9e0`; metadata uses the full commit hash, AuthorName, and reproducible-build fields (Binaries + AllowedAPKSigningKeys)
     - [!] Fork pipeline blocked by GitLab identity verification ("Verify your identity to run this pipeline", 0 jobs). Per F-Droid template guidance: no phone/credit-card verification submitted; MR comment posted requesting maintainer-triggered CI
-    - [ ] Await fdroiddata CI (maintainer-triggered) + reviewer feedback; draft fixes here
+    - [!] **MR #57695 closed by maintainer `linsui` (Nov 16, 19:06 UTC):** "This app doesn't meet the policy that it needs to be maintained for more than 3 months." — a project-age gate, not a code/metadata issue. **Re-submission window opens ~Feb 16, 2027.** Keep shipping tagged releases until then (auto-update picks up new tags once included); metadata draft already refreshed to 1.1.0
+    - [ ] Re-submit fdroiddata MR after 2027-02-16 (new branch, current metadata draft, request maintainer-triggered CI again)
+    - [x] **Release v1.1.0 published (Nov 16):** reader structure (headings/bullets/images), preview prefetch 10, blocked-publisher UX, reader back navigation; signed APK + notes on GitHub
+    - [ ] Consider IzzyOnDroid submission (no project-age gate; picks up GitHub Releases)
     - [ ] Optional: Play Store track; signatures differ per distribution (uninstall to switch)
     - [ ] On-device widget visual pass (add via launcher, check taps/sizing on One UI) — user action
     - [ ] OPML import/export — next session
