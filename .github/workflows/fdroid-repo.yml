@@ -63,6 +63,11 @@ jobs:
             gh release download --repo "$GITHUB_REPOSITORY" \
               --pattern 'app-release.apk' --dir fdroid/repo --clobber
           fi
+          APK=fdroid/repo/app-release.apk
+          CODE=$(aapt dump badging "$APK" | sed -n "s/.*versionCode='\([0-9]*\)'.*/\1/p" | head -1)
+          test -n "$CODE"
+          mv "$APK" "fdroid/repo/io.github.iamoutofmana.doomscroll_${CODE}.apk"
+          echo "APK versionCode: $CODE"
 
       - name: Add app metadata and landing page
         run: |
