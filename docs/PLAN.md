@@ -352,6 +352,7 @@ FreshRSS/Miniflux sync · Mastodon sources · "news near me" geo feed · multi-w
     - [ ] Re-submit fdroiddata MR after 2027-02-16 (new branch, current metadata draft, request maintainer-triggered CI again)
     - [x] **Release v1.1.0 published (Nov 16):** reader structure (headings/bullets/images), preview prefetch 10, blocked-publisher UX, reader back navigation; signed APK + notes on GitHub
     - [!] **IzzyOnDroid ruled out (checked Nov 16):** tracking moved to Codeberg (`codeberg.org/IzzyOnDroid/repodata/issues`), no signed-in account here; and their App Inclusion Policy **explicitly rejects AI-generated / vibe-coded apps** — an honest request would be rejected, so none was posted. Self-hosted F-Droid repo (GitHub Pages) is the viable no-gate option
+    - [x] **Self-hosted F-Droid repo live (Nov 16):** `https://iamoutofmana.github.io/doomscroll-ad-free/repo` (landing page at `/`); CI workflow `.github/workflows/fdroid-repo.yml` builds/signs the index with `fdroidserver` on every GitHub Release and deploys to Pages; repo key `fdroid-repo.jks` (fingerprint `93:93:39:66:…:20:60`) backed up in `doomscroll-release/` and stored as GitHub secrets; verified: signed indexes (v1+v2), v1.1.0 APK (`io.github.iamoutofmana.doomscroll_11.apk`), icon + 4 screenshots, localized metadata, APK hash matches index
     - [ ] Optional: Play Store track; signatures differ per distribution (uninstall to switch)
     - [ ] On-device widget visual pass (add via launcher, check taps/sizing on One UI) — user action
     - [ ] OPML import/export — next session

@@ -16,6 +16,13 @@ keystore.properties
 *.keystore
 *.jks
 
+# Self-hosted F-Droid repo build artifacts (generated in CI, may contain secrets)
+fdroid/config.yml
+fdroid/repo/
+fdroid/archive/
+fdroid/tmp/
+fdroid-repo-key.properties
+
 # Kotlin
 .kotlin/
 

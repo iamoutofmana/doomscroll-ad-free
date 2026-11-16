@@ -48,6 +48,8 @@ Add the developer-hosted F-Droid repo to **F-Droid**, **Droid-ify** or **Neo Sto
 2. Paste `https://iamoutofmana.github.io/doomscroll-ad-free/repo`
 3. Search for **Doomscroll** and install — future updates arrive automatically.
 
+Repo page with the same instructions: https://iamoutofmana.github.io/doomscroll-ad-free/
+
 Repo signing key SHA-256:
 `93:93:39:66:83:61:09:CB:F2:33:1F:E9:9F:E9:51:3E:ED:04:8C:F0:A9:F4:49:D2:AA:D6:94:31:3C:79:20:60`
 
