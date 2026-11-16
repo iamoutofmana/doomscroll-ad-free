@@ -45,7 +45,7 @@ Full plan: [`docs/PLAN.md`](docs/PLAN.md)
 Add the developer-hosted F-Droid repo to **F-Droid**, **Droid-ify** or **Neo Store**:
 
 1. Settings → Repositories → **+**
-2. Paste `https://iamoutofmana.github.io/doomscroll-ad-free/`
+2. Paste `https://iamoutofmana.github.io/doomscroll-ad-free/repo`
 3. Search for **Doomscroll** and install — future updates arrive automatically.
 
 Repo signing key SHA-256:

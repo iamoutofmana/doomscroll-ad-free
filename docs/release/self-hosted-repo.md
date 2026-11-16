@@ -5,7 +5,7 @@ GitHub Releases, but with automatic updates in F-Droid / Droid-ify / Neo Store.
 
 | | |
 |---|---|
-| **Repo URL** | `https://iamoutofmana.github.io/doomscroll-ad-free/` |
+| **Repo URL** | `https://iamoutofmana.github.io/doomscroll-ad-free/repo` |
 | **Repo signing key SHA-256** | `93:93:39:66:83:61:09:CB:F2:33:1F:E9:9F:E9:51:3E:ED:04:8C:F0:A9:F4:49:D2:AA:D6:94:31:3C:79:20:60` |
 | **Hosting** | GitHub Pages, deployed by `.github/workflows/fdroid-repo.yml` |
 | **APK signer** | Project release key (`B4:F9:…:EC`), same as GitHub Releases |
@@ -19,7 +19,7 @@ GitHub Releases, but with automatic updates in F-Droid / Droid-ify / Neo Store.
 4. `fdroid update` scans the APK, builds `index-v1.jar` / `index-v2.json`, and signs the
    index with the repo key from secrets.
 5. `fdroid verify` checks the APK against `AllowedAPKSigningKeys`.
-6. The `fdroid/repo` directory is deployed to GitHub Pages via `actions/deploy-pages`.
+6. The site is deployed to GitHub Pages: landing page at `/`, index + APK under `/repo/`.
 
 Each deploy publishes exactly one APK (latest release); `archive_older: 0` keeps old
 versions out of the served repo. Installed clients still see the new version because the
@@ -48,8 +48,9 @@ repo (the client pins the old fingerprint). If the password is lost, the key is 
 
 - **Rebuild the repo for the latest release:** Actions → *F-Droid repo* → *Run workflow*,
   or `gh workflow run fdroid-repo.yml`.
-- **Check it is live:** `curl -sI https://iamoutofmana.github.io/doomscroll-ad-free/index-v1.jar`
-  (expect `200`), and open the landing page in a browser.
+- **Check it is live:** `curl -sI https://iamoutofmana.github.io/doomscroll-ad-free/repo/index-v1.jar`
+  (expect `200`), and open the landing page at
+  `https://iamoutofmana.github.io/doomscroll-ad-free/` in a browser.
 - **Verify the served index signature locally:** download `index-v1.jar` and check the
   signing certificate's SHA-256 equals the fingerprint above.
 - **Rotate the repo key:** generate a new keystore, update the three secrets, deploy, then

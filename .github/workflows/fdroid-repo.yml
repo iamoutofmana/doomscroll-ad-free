@@ -24,14 +24,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
@@ -69,7 +69,6 @@ jobs:
           mkdir -p fdroid/metadata/io.github.iamoutofmana.doomscroll
           cp -r fastlane/metadata/android/en-US fdroid/metadata/io.github.iamoutofmana.doomscroll/
           cp fastlane/metadata/android/en-US/images/icon.png fdroid/repo-icon.png
-          cp .github/fdroid/index.html fdroid/repo/index.html
           touch fdroid/repo/.nojekyll
 
       - name: Write fdroid config
@@ -79,7 +78,7 @@ jobs:
           KEY_ALIAS: ${{ secrets.FDROID_REPO_KEY_ALIAS }}
         run: |
           cat > fdroid/config.yml <<EOF
-          repo_url: https://iamoutofmana.github.io/doomscroll-ad-free/
+          repo_url: https://iamoutofmana.github.io/doomscroll-ad-free/repo
           repo_name: Doomscroll Ad Free
           repo_description: Ad-free, open-source feed reader for Android - Google News, RSS, YouTube, Reddit, Lemmy and Hacker News in one clean feed, with an in-app reader and widgets.
           repo_icon: repo-icon.png
@@ -107,9 +106,16 @@ jobs:
             -storepass "${{ secrets.FDROID_REPO_KEYSTORE_PASS }}" \
             | grep -E 'SHA256:|Alias name:' || true
 
+      - name: Assemble Pages site
+        run: |
+          mkdir -p site
+          cp .github/fdroid/index.html site/index.html
+          cp -r fdroid/repo site/repo
+          touch site/.nojekyll
+
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: fdroid/repo
+          path: site
 
   deploy:
     needs: build
