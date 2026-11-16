@@ -1,0 +1,7 @@
+Reader and picture improvements.
+
+- Reader mode now keeps the article's structure: section headings, bullets, images and proper spacing
+- More pictures on feed cards: previews warm for the top 10 stories on open and refresh
+- Publishers that block in-app reading (NYT, WSJ, MarketWatch) now say so, with a one-tap "Open original"
+- Site logos and banners are kept out of article images; cards fall back to the article's first photo
+- Back from the reader returns to the feed instead of leaving the app
