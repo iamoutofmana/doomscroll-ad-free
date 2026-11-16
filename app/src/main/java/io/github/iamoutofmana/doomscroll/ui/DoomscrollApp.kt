@@ -1,5 +1,6 @@
 package io.github.iamoutofmana.doomscroll.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -57,6 +58,8 @@ fun DoomscrollApp(pendingArticleId: MutableState<Long?>? = null) {
 
     val currentReader = readerArticleId
     if (currentReader != null) {
+        // System back returns to the feed instead of leaving the app.
+        BackHandler { readerArticleId = null }
         ReaderScreen(articleId = currentReader, onClose = { readerArticleId = null })
         return
     }

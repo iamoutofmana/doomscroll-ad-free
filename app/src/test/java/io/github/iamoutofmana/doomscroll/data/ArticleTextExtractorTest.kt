@@ -76,6 +76,41 @@ class ArticleTextExtractorTest {
     }
 
     @Test
+    fun skipsLogoAndBannerImages() {
+        val html = """
+            <html><head><meta property="og:image" content="/images/hero.jpg" /></head>
+            <body><article>
+              <img src="/static/site-logo.png" width="600" height="80" />
+              <p>A paragraph of readable article text long enough to satisfy the extractor limits.</p>
+              <img src="/static/promo.jpg" class="ad-banner" />
+              <p>Another paragraph of readable text that continues the article body for the reader.</p>
+            </article></body></html>
+        """.trimIndent()
+
+        val extracted = requireNotNull(ArticleTextExtractor.extract(html, "https://example.com/news/story"))
+        val images = extracted.blocks.filter { it.type == ReaderBlock.IMAGE }.mapNotNull { it.imageUrl }
+
+        assertTrue(images.none { it.contains("logo") || it.contains("banner") })
+        assertTrue(images.size <= 2)
+    }
+
+    @Test
+    fun keepsOnlyOneLeadingImage() {
+        val html = """
+            <html><body><article>
+              <img src="/images/first.jpg" />
+              <img src="/images/second.jpg" />
+              <p>A paragraph of readable article text long enough to satisfy the extractor limits.</p>
+            </article></body></html>
+        """.trimIndent()
+
+        val extracted = requireNotNull(ArticleTextExtractor.extract(html, "https://example.com/news/story"))
+        val images = extracted.blocks.filter { it.type == ReaderBlock.IMAGE }.mapNotNull { it.imageUrl }
+
+        assertEquals(listOf("https://example.com/images/first.jpg"), images)
+    }
+
+    @Test
     fun filtersJunkAndSkipsRepeatedTitle() {
         val title = "Big Box Office Weekend For Everyone Involved In The Movie"
         val body = "Johnny Depp returned to the top of box office charts this weekend with a solid opening for the new film."

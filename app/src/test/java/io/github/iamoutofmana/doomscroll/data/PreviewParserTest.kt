@@ -108,4 +108,32 @@ class PreviewParserTest {
         assertTrue(text.length <= 601)
         assertTrue(text.endsWith("…"))
     }
+
+    @Test
+    fun fallsBackToFirstContentImage() {
+        val html = """
+            <html><head></head><body><article>
+              <p>A paragraph of readable article text long enough to be used as a summary here.</p>
+              <img data-src="/images/story.jpg" />
+            </article></body></html>
+        """.trimIndent()
+
+        val preview = PreviewParser.parse(html, "https://example.com/news/a")
+
+        assertEquals("https://example.com/images/story.jpg", preview.imageUrl)
+    }
+
+    @Test
+    fun ignoresLogoImagesForHeroFallback() {
+        val html = """
+            <html><body><article>
+              <img src="/static/logo.png" width="600" height="80" />
+              <p>A paragraph of readable article text long enough to be used as a summary here.</p>
+            </article></body></html>
+        """.trimIndent()
+
+        val preview = PreviewParser.parse(html, "https://example.com/news/a")
+
+        assertNull(preview.imageUrl)
+    }
 }

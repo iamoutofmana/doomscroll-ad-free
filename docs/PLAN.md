@@ -329,7 +329,10 @@ FreshRSS/Miniflux sync · Mastodon sources · "news near me" geo feed · multi-w
     - [x] Reader renders structured blocks now: styled headings, bullets, hero + inline images (Coil), better spacing; cached as JSON, extraction-cache version bumped
     - [x] Paywall-aware reader failures ("behind a paywall — open the original") + explicit **Open original** action in the error state and in the expanded card when no summary exists
     - [x] More card images: preview prefetch raised to top 10 and runs whenever the top of the feed changes (cooldown-protected)
-    - [x] Tests: 107 passing; pending device verification (phone disconnected at build time)
+    - [x] Image quality: logo/icon/banner filtering + one lead image only + capped image height; preview falls back to first content image when og:image is missing
+    - [x] Blocked publishers (NYT 403, WSJ/MarketWatch 401) get a specific "blocks in-app reading — open the original" message; verified on device
+    - [x] Reader system-back returns to the feed (BackHandler) instead of leaving the app
+    - [x] Verified on device (release build): richer feed images (NBC, WDSU, HN/OpenAI), NBC reader shows title → byline → hero → body, NYT shows blocked-publisher message, back returns to feed
 - [x] **Release pass (Nov 15, 2026):**
     - [x] Release keystore generated (4096-bit RSA, 10,000 days, alias `doomscroll`) — stored outside the repo at `doomscroll-release/` with backup instructions; `keystore.properties` gitignored
     - [x] Gradle release signing config wired (auto-loads `keystore.properties`); version bumped to **1.0.0 (versionCode 10)**

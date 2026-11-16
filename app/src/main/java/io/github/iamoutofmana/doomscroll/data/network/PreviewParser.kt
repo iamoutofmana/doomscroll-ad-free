@@ -24,6 +24,16 @@ object PreviewParser {
     private const val PARAGRAPH_MIN = 60
     private const val PARAGRAPH_MAX = 800
     private const val MAX_PARAGRAPHS = 3
+    private const val MIN_IMAGE_WIDTH = 200
+    private const val MIN_IMAGE_HEIGHT = 120
+
+    // Site chrome rather than article imagery.
+    private val IMAGE_JUNK = Regex(
+        "(?i)(logo|sprite|icon|avatar|placeholder|pixel|spacer|badge|masthead|1x1" +
+            "|feedburner|doubleclick|advert|/ads?/)",
+    )
+    private val IMAGE_JUNK_HINTS = listOf("logo", "icon", "brand", "masthead", "badge", "avatar", "sprite")
+    private val IMAGE_SOURCE_ATTRS = listOf("src", "data-src", "data-lazy-src", "data-original")
 
     fun parse(
         html: String,
@@ -44,6 +54,7 @@ object PreviewParser {
         val imageUrl = meta("meta[property=og:image]", resolveUrl = true)
             ?: meta("meta[name=og:image]", resolveUrl = true)
             ?: meta("meta[name=twitter:image]", resolveUrl = true)
+            ?: firstContentImage(doc)
 
         val ogDescription = clean(meta("meta[property=og:description]", resolveUrl = false))
         val metaDescription = clean(meta("meta[name=description]", resolveUrl = false))
@@ -54,6 +65,26 @@ object PreviewParser {
             ?.let(::cap)
 
         return Preview(description, imageUrl)
+    }
+
+    private fun firstContentImage(doc: Document): String? {
+        val scopes = listOfNotNull(doc.selectFirst("article"), doc.selectFirst("main"), doc.body())
+        for (scope in scopes) {
+            for (img in scope.select("img")) {
+                val attr = IMAGE_SOURCE_ATTRS.firstOrNull { img.attr(it).isNotBlank() } ?: continue
+                val raw = img.attr(attr).trim()
+                if (IMAGE_JUNK.containsMatchIn(raw)) continue
+                val hint = (img.className() + " " + img.id()).lowercase()
+                if (IMAGE_JUNK_HINTS.any { hint.contains(it) }) continue
+                val width = img.attr("width").toIntOrNull()
+                val height = img.attr("height").toIntOrNull()
+                if (width != null && width < MIN_IMAGE_WIDTH) continue
+                if (height != null && height < MIN_IMAGE_HEIGHT) continue
+                val absolute = img.absUrl(attr).ifBlank { raw }
+                if (absolute.startsWith("https://") || absolute.startsWith("http://")) return absolute
+            }
+        }
+        return null
     }
 
     private fun extractBodyExcerpt(doc: Document): String? {

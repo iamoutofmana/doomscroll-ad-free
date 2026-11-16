@@ -55,28 +55,35 @@ class ReaderService(
         }
 
         return try {
-            val html = withContext(Dispatchers.IO) { fetchHtml(target) }
-                ?: return Result.Failed(article, "Couldn't download the page")
+            when (val fetched = withContext(Dispatchers.IO) { fetchHtml(target) }) {
+                is Fetch.HttpError -> Result.Failed(article, messageFor(fetched.code))
 
-            val extracted = ArticleTextExtractor.extract(html, target)
-            if (extracted == null) {
-                val paywalled = PAYWALL_MARKERS.any { marker -> html.contains(marker, ignoreCase = true) }
-                return Result.Failed(
-                    article,
-                    if (paywalled) {
-                        "This article looks like it's behind a paywall — open the original to read it there."
+                Fetch.Empty -> Result.Failed(article, "Couldn't download the page")
+
+                is Fetch.Ok -> {
+                    val extracted = ArticleTextExtractor.extract(fetched.html, target)
+                    if (extracted == null) {
+                        val paywalled = PAYWALL_MARKERS.any { marker ->
+                            fetched.html.contains(marker, ignoreCase = true)
+                        }
+                        Result.Failed(
+                            article,
+                            if (paywalled) {
+                                "This article looks like it's behind a paywall — open the original to read it there."
+                            } else {
+                                "Couldn't find readable text on this page"
+                            },
+                        )
                     } else {
-                        "Couldn't find readable text on this page"
-                    },
-                )
+                        val blocks = extracted.blocks
+                        articles.saveReaderText(
+                            article.id,
+                            JSON.encodeToString(blocks),
+                        )
+                        Result.Content(article, extracted.title ?: article.title, blocks)
+                    }
+                }
             }
-
-            val blocks = extracted.blocks
-            articles.saveReaderText(
-                article.id,
-                JSON.encodeToString(blocks),
-            )
-            Result.Content(article, extracted.title ?: article.title, blocks)
         } catch (e: Exception) {
             Result.Failed(article, e.message ?: "Extraction failed")
         }
@@ -92,17 +99,33 @@ class ReaderService(
         return article.link
     }
 
-    private fun fetchHtml(url: String): String? {
+    private fun fetchHtml(url: String): Fetch {
         val request = Request.Builder()
             .url(url)
             .header("User-Agent", AppMetadata.BROWSER_UA)
             .header("Accept", "text/html,application/xhtml+xml")
             .build()
         return client.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) return null
-            val body = response.body ?: return null
-            HttpBodies.readCapped(body, MAX_ARTICLE_BYTES)?.let { String(it) }
+            if (!response.isSuccessful) return@use Fetch.HttpError(response.code)
+            val body = response.body ?: return@use Fetch.Empty
+            val bytes = HttpBodies.readCapped(body, MAX_ARTICLE_BYTES) ?: return@use Fetch.Empty
+            Fetch.Ok(String(bytes))
         }
+    }
+
+    private fun messageFor(code: Int): String = when (code) {
+        401, 403 -> "This publisher blocks in-app reading — open the original to read it there."
+        404, 410 -> "This article is no longer available at that link."
+        429 -> "The publisher is rate-limiting requests — try again in a minute, or open the original."
+        else -> "Couldn't download the page (HTTP $code)"
+    }
+
+    private sealed interface Fetch {
+        class Ok(val html: String) : Fetch
+
+        data class HttpError(val code: Int) : Fetch
+
+        object Empty : Fetch
     }
 
     private fun decodeBlocks(raw: String): List<ReaderBlock>? {

@@ -43,6 +43,6 @@ class DoomscrollApplication : Application() {
 
     private companion object {
         const val KEY_READER_VERSION = "reader_extraction_version"
-        const val READER_EXTRACTION_VERSION = 2
+        const val READER_EXTRACTION_VERSION = 4
     }
 }

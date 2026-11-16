@@ -26,7 +26,14 @@ object ArticleTextExtractor {
     private const val MAX_CHARS = 40_000
     private const val MIN_TOTAL_CHARS = 80
     private const val TITLE_MIN = 20
-    private const val MAX_IMAGES = 4
+    private const val MAX_IMAGES = 2
+
+    // URL/class hints that mark site chrome rather than article imagery.
+    private val IMAGE_JUNK = Regex(
+        "(?i)(logo|sprite|icon|avatar|placeholder|pixel|spacer|badge|masthead" +
+            "|1x1|feedburner|doubleclick|advert|/ads?/)",
+    )
+    private val IMAGE_JUNK_HINTS = listOf("logo", "icon", "brand", "masthead", "badge", "sprite", "banner", "avatar")
 
     // "... 2 hours ago": these are related-content link rows, not article text.
     private val RELATIVE_TIMESTAMP_END = Regex(
@@ -70,6 +77,7 @@ object ArticleTextExtractor {
         val ogImage = doc.selectFirst("meta[property=og:image]")?.attr("content")?.trim()?.ifBlank { null }
             ?: doc.selectFirst("meta[name=twitter:image]")?.attr("content")?.trim()?.ifBlank { null }
             ?: return blocks
+        if (IMAGE_JUNK.containsMatchIn(ogImage)) return blocks
         val absolute = absoluteUrl(ogImage, baseUri) ?: return blocks
         return listOf(ReaderBlock(type = ReaderBlock.IMAGE, imageUrl = absolute)) + blocks
     }
@@ -81,16 +89,20 @@ object ArticleTextExtractor {
         val result = mutableListOf<ReaderBlock>()
         var chars = 0
         var images = 0
+        var textBlocks = 0
         for (element in container.select("h1, h2, h3, h4, p, blockquote, li, img")) {
             val tag = element.tagName().lowercase()
             if (tag == "img") {
-                if (images < MAX_IMAGES) {
-                    val src = element.attr("src").ifBlank { element.attr("data-src") }
-                    val absolute = absoluteUrl(src, container.baseUri())
-                    if (absolute != null) {
-                        result.add(ReaderBlock(type = ReaderBlock.IMAGE, imageUrl = absolute))
-                        images++
-                    }
+                if (images >= MAX_IMAGES) continue
+                // Only one image may appear before the first text block (a lead photo);
+                // everything after that must follow actual article text.
+                if (textBlocks == 0 && images >= 1) continue
+                val src = element.attr("src").ifBlank { element.attr("data-src") }
+                if (isJunkImage(element, src)) continue
+                val absolute = absoluteUrl(src, container.baseUri())
+                if (absolute != null) {
+                    result.add(ReaderBlock(type = ReaderBlock.IMAGE, imageUrl = absolute))
+                    images++
                 }
                 continue
             }
@@ -108,6 +120,7 @@ object ArticleTextExtractor {
                     if (result.any { it.type == ReaderBlock.HEADING && normalizeForCompare(it.text.orEmpty()) == key }) continue
                     result.add(ReaderBlock(type = ReaderBlock.HEADING, text = text))
                     chars += text.length
+                    textBlocks++
                 }
 
                 tag == "li" -> {
@@ -115,6 +128,7 @@ object ArticleTextExtractor {
                     if (ArticleHeuristics.isJunk(text)) continue
                     result.add(ReaderBlock(type = ReaderBlock.BULLET, text = text))
                     chars += text.length
+                    textBlocks++
                 }
 
                 else -> {
@@ -128,11 +142,26 @@ object ArticleTextExtractor {
                     if (result.any { it.type == ReaderBlock.PARAGRAPH && normalizeForCompare(it.text.orEmpty()) == key }) continue
                     result.add(ReaderBlock(type = ReaderBlock.PARAGRAPH, text = text))
                     chars += text.length
+                    textBlocks++
                 }
             }
             if (result.size >= MAX_BLOCKS || chars >= MAX_CHARS) break
         }
         return result
+    }
+
+    private fun isJunkImage(
+        element: Element,
+        url: String,
+    ): Boolean {
+        if (url.isBlank() || IMAGE_JUNK.containsMatchIn(url)) return true
+        val hint = (element.className() + " " + element.id()).lowercase()
+        if (IMAGE_JUNK_HINTS.any { hint.contains(it) }) return true
+        val width = element.attr("width").toIntOrNull()
+        val height = element.attr("height").toIntOrNull()
+        if (width != null && width < 200) return true
+        if (height != null && height < 120) return true
+        return false
     }
 
     private fun absoluteUrl(
