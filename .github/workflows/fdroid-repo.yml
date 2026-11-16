@@ -69,7 +69,6 @@ jobs:
           mkdir -p fdroid/metadata/io.github.iamoutofmana.doomscroll
           cp -r fastlane/metadata/android/en-US fdroid/metadata/io.github.iamoutofmana.doomscroll/
           cp fastlane/metadata/android/en-US/images/icon.png fdroid/repo-icon.png
-          touch fdroid/repo/.nojekyll
 
       - name: Write fdroid config
         env:
