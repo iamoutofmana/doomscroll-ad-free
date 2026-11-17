@@ -358,6 +358,7 @@ FreshRSS/Miniflux sync · Mastodon sources · "news near me" geo feed · multi-w
     - [ ] On-device widget visual pass (add via launcher, check taps/sizing on One UI) — user action
     - [ ] OPML import/export — next session
 - [x] **Repo protection (Nov 17):** GitHub rulesets `Protect main` (blocks deletion + force-push on `main`) and `Protect release tags` (blocks deletion/moving of `v*` tags), both active with no bypass; normal fast-forward pushes and tag creation unaffected. F-Droid/repo automation depends on stable tags, hence tag protection.
+- [x] **Hardening (Nov 17):** immutable releases enabled (applies to releases published from now on: assets and tag locked, release attestation generated; notes still editable), Dependabot security updates enabled, CI token reduced to `contents: read`, broaden gitignore for signing material (`*keystore*`, `*.jks*`, `*.p12/.pfx/.pem/.key`); secret scanning + push protection were already on. Actions remain tag-pinned (SHA pinning deferred).
 - [ ] 3 days of daily driving without Samsung's media page → **Phase 1 DoD** (in progress — collecting annoyances for Phase 2)
 
 ---
