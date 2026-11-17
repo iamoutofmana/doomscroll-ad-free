@@ -12,9 +12,13 @@ captures/
 
 # Local configuration (SDK paths, signing keys)
 local.properties
-keystore.properties
-*.keystore
-*.jks
+*keystore*
+*.jks*
+*.keystore*
+*.p12
+*.pfx
+*.pem
+*.key
 
 # Self-hosted F-Droid repo build artifacts (generated in CI, may contain secrets)
 fdroid/config.yml
