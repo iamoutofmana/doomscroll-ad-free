@@ -1,0 +1,7 @@
+Topic packs and feed discovery.
+
+- Discover topic packs: AI, construction, Salt Lake City, food, business — add a curated bundle in one tap, and uncheck anything you don't want
+- Quick searches: presets for AI, construction, Salt Lake City, food and business in the Google News tab
+- Add from a link: paste a site or article URL and the app finds its RSS/Atom feed
+- X/Twitter: explained in-app; use a Nitter or RSSHub feed URL since X has no public RSS
+- Includes the 1.1.1 fix for the "Story hidden" bar

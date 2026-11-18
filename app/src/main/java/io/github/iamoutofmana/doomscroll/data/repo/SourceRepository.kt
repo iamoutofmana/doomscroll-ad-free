@@ -2,6 +2,7 @@ package io.github.iamoutofmana.doomscroll.data.repo
 
 import io.github.iamoutofmana.doomscroll.data.db.SourceDao
 import io.github.iamoutofmana.doomscroll.data.db.SourceEntity
+import io.github.iamoutofmana.doomscroll.domain.model.NewSource
 import io.github.iamoutofmana.doomscroll.domain.model.SourceType
 import kotlinx.coroutines.flow.Flow
 
@@ -22,6 +23,16 @@ class SourceRepository(private val dao: SourceDao) {
             createdAt = System.currentTimeMillis(),
         ),
     )
+
+    /** Adds a batch, returning how many were actually inserted (unique URL enforced by Room). */
+    suspend fun addAll(newSources: List<NewSource>): Int {
+        var added = 0
+        for (source in newSources) {
+            val id = add(source.type, source.url, source.title)
+            if (id > 0L) added++
+        }
+        return added
+    }
 
     suspend fun setEnabled(
         id: Long,

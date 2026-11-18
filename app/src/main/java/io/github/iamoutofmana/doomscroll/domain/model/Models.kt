@@ -29,3 +29,10 @@ enum class HiddenReason(val label: String) {
     SPONSORED_FILTER("Sponsored filter"),
     USER("Hidden by you"),
 }
+
+/** A source to insert, independent of Room (used by topic packs and link discovery). */
+data class NewSource(
+    val type: SourceType,
+    val url: String,
+    val title: String,
+)

@@ -131,7 +131,7 @@
 
     <string name="help_open">Help</string>
     <string name="help_sources_title">Add sources</string>
-    <string name="help_sources_body">Sources → Add source: pick Google News topics or searches, paste any RSS/Atom feed, or add YouTube channels, Reddit, Lemmy and Hacker News from the More sources tab.</string>
+    <string name="help_sources_body">Sources → Add source: pick Google News topics or searches, paste any RSS/Atom feed, or add YouTube channels, Reddit, Lemmy and Hacker News from the More sources tab. Or use a topic pack to add several at once.</string>
     <string name="help_read_title">Reading</string>
     <string name="help_read_body">Tap a story once to expand it (summary + other coverage). Tap again to read the full article in the app — text only, no ads. \"Original\" opens the publisher\'s page.</string>
     <string name="help_organize_title">Organizing</string>
@@ -140,4 +140,30 @@
     <string name="help_widget_body">Long-press your home screen → Widgets → Doomscroll. The scrolling widget needs a launcher that supports scrollable widgets; the front-page widget fits One UI.</string>
     <string name="help_privacy_title">Privacy</string>
     <string name="help_privacy_body">No account, no ads, no tracking. Everything stays on your device, and the app only talks to the feeds you add.</string>
+
+    <string name="packs_discover_title">Discover topic packs</string>
+    <string name="packs_discover_body">AI, construction, Salt Lake City, food, business — add a curated bundle in one tap.</string>
+    <string name="packs_browse">Browse packs</string>
+    <string name="packs_title">Topic packs</string>
+    <string name="packs_subtitle">Curated bundles. Uncheck anything you don\'t want.</string>
+    <string name="packs_all">‹ All packs</string>
+    <string name="packs_sources_count">%1$d sources</string>
+    <string name="packs_add_n">Add %1$d sources</string>
+    <string name="packs_added_n">Added %1$d sources. Syncing…</string>
+    <string name="packs_added_some">Added %1$d of %2$d sources (%3$d already in your list). Syncing…</string>
+    <string name="packs_added_none">Those sources are already in your list.</string>
+    <string name="packs_added_one">Added %1$s. Syncing…</string>
+    <string name="packs_already_one">%1$s is already in your list.</string>
+
+    <string name="add_sheet_presets">Quick searches</string>
+    <string name="add_sheet_link_title">Add from a link</string>
+    <string name="add_sheet_link_label">Site or article URL</string>
+    <string name="add_sheet_link_hint">https://example.com</string>
+    <string name="add_sheet_link_body">We\'ll look for an RSS/Atom feed on that page.</string>
+    <string name="add_sheet_link_button">Find feed</string>
+    <string name="feed_discovery_invalid">Enter a full https:// link</string>
+    <string name="feed_discovery_unsafe">That link isn\'t allowed</string>
+    <string name="feed_discovery_x">X/Twitter has no public RSS. Add a Nitter or RSSHub feed URL instead.</string>
+    <string name="feed_discovery_failed">Couldn\'t read that site</string>
+    <string name="feed_discovery_none">Couldn\'t find an RSS/Atom feed at that link</string>
 </resources>

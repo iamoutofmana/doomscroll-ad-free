@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import io.github.iamoutofmana.doomscroll.data.db.DoomscrollDatabase
 import io.github.iamoutofmana.doomscroll.data.network.ArticleEnricher
+import io.github.iamoutofmana.doomscroll.data.network.FeedDiscovery
 import io.github.iamoutofmana.doomscroll.data.network.FeedFetcher
 import io.github.iamoutofmana.doomscroll.data.network.GnRedirectResolver
 import io.github.iamoutofmana.doomscroll.data.repo.ArticleRepository
@@ -40,6 +41,7 @@ class AppContainer(context: Context) {
     val ruleRepository = RuleRepository(database.ruleDao(), database.articleDao())
     val articleEnricher = ArticleEnricher(httpClient, gnRedirectResolver)
     val readerService = ReaderService(httpClient, gnRedirectResolver, articleRepository)
+    val feedDiscovery = FeedDiscovery(httpClient)
     val syncEngine = SyncEngine(sourceRepository, articleRepository, ruleRepository, feedFetcher, gnRedirectResolver)
     val enrichment = EnrichmentService(articleRepository, articleEnricher)
 

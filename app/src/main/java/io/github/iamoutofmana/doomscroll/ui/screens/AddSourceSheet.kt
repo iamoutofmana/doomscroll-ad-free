@@ -49,6 +49,7 @@ fun AddSourceSheet(
     onAddGoogleNews: (List<GoogleNews.Topic>, GoogleNews.GnLocale) -> Unit,
     onAddSearch: (String, GoogleNews.GnLocale) -> Unit,
     onAddRss: (String) -> Unit,
+    onAddFromLink: (String) -> Unit,
     onAddYouTube: (String) -> Unit,
     onAddReddit: (String) -> Unit,
     onAddLemmy: (String, String) -> Unit,
@@ -79,7 +80,7 @@ fun AddSourceSheet(
             if (tab == 0) {
                 GoogleNewsSection(onAddGoogleNews, onAddSearch)
             } else {
-                MoreSourcesSection(onAddYouTube, onAddReddit, onAddLemmy, onAddHackerNews, onAddRss)
+                MoreSourcesSection(onAddYouTube, onAddReddit, onAddLemmy, onAddHackerNews, onAddRss, onAddFromLink)
             }
         }
     }
@@ -146,6 +147,21 @@ private fun GoogleNewsSection(
                 .padding(16.dp)
                 .fillMaxWidth(),
         )
+        Text(
+            text = stringResource(R.string.add_sheet_presets),
+            style = MaterialTheme.typography.labelMedium,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp),
+        )
+        FlowRow(modifier = Modifier.padding(horizontal = 12.dp)) {
+            SEARCH_PRESETS.forEach { preset ->
+                FilterChip(
+                    selected = query == preset.query,
+                    onClick = { query = preset.query },
+                    label = { Text(preset.label) },
+                    modifier = Modifier.padding(4.dp),
+                )
+            }
+        }
         Button(
             onClick = { onAddSearch(query.trim(), locale) },
             enabled = query.isNotBlank(),
@@ -165,11 +181,13 @@ private fun MoreSourcesSection(
     onAddLemmy: (String, String) -> Unit,
     onAddHackerNews: () -> Unit,
     onAddRss: (String) -> Unit,
+    onAddFromLink: (String) -> Unit,
 ) {
     var yt by remember { mutableStateOf("") }
     var sub by remember { mutableStateOf("") }
     var lemmyInstance by remember { mutableStateOf("") }
     var lemmyCommunity by remember { mutableStateOf("") }
+    var link by remember { mutableStateOf("") }
     var rss by remember { mutableStateOf("") }
 
     // YouTube
@@ -274,6 +292,37 @@ private fun MoreSourcesSection(
 
     HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
+    // Add from a link: find the site's feed automatically.
+    SectionHeader(R.string.add_sheet_link_title)
+    Text(
+        text = stringResource(R.string.add_sheet_link_body),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp),
+    )
+    OutlinedTextField(
+        value = link,
+        onValueChange = { link = it },
+        label = { Text(stringResource(R.string.add_sheet_link_label)) },
+        placeholder = { Text(stringResource(R.string.add_sheet_link_hint)) },
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
+        modifier = Modifier
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .fillMaxWidth(),
+    )
+    Button(
+        onClick = { onAddFromLink(link.trim()) },
+        enabled = link.isNotBlank(),
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .fillMaxWidth(),
+    ) {
+        Text(stringResource(R.string.add_sheet_link_button))
+    }
+
+    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
     // Generic RSS
     SectionHeader(R.string.add_sheet_rss_title)
     val trimmed = rss.trim()
@@ -346,3 +395,17 @@ private fun LocaleRow(
         }
     }
 }
+
+private data class SearchPreset(
+    val label: String,
+    val query: String,
+)
+
+/** One-tap starting points for the topics users actually asked for. */
+private val SEARCH_PRESETS = listOf(
+    SearchPreset("AI", "\"artificial intelligence\""),
+    SearchPreset("Construction", "\"construction industry\""),
+    SearchPreset("Salt Lake City", "\"Salt Lake City\""),
+    SearchPreset("Food", "\"restaurant industry\""),
+    SearchPreset("Business", "business"),
+)

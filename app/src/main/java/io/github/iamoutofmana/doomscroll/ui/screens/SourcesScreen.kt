@@ -1,5 +1,6 @@
 package io.github.iamoutofmana.doomscroll.ui.screens
 
+import android.content.Context
 import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,6 +19,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -44,12 +47,15 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.iamoutofmana.doomscroll.R
 import io.github.iamoutofmana.doomscroll.data.db.SourceEntity
+import io.github.iamoutofmana.doomscroll.data.network.FeedDiscovery
 import io.github.iamoutofmana.doomscroll.domain.googlenews.GoogleNews
 import io.github.iamoutofmana.doomscroll.domain.model.SourceType
+import io.github.iamoutofmana.doomscroll.domain.packs.TopicPacks
 import io.github.iamoutofmana.doomscroll.domain.popularsources.PopularSources
 import io.github.iamoutofmana.doomscroll.domain.time.TimeText
 import io.github.iamoutofmana.doomscroll.ui.LocalAppContainer
 import io.github.iamoutofmana.doomscroll.ui.components.FilterRulesDialog
+import io.github.iamoutofmana.doomscroll.ui.components.sourceTypeLabel
 import kotlinx.coroutines.launch
 
 @Composable
@@ -59,6 +65,7 @@ fun SourcesScreen(contentPadding: PaddingValues) {
     val scope = rememberCoroutineScope()
     val sources by container.sourceRepository.sources.collectAsStateWithLifecycle(initialValue = emptyList())
     var showAdd by remember { mutableStateOf(false) }
+    var showPacks by remember { mutableStateOf(false) }
     var showFilters by remember { mutableStateOf(false) }
     var syncing by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -105,6 +112,36 @@ fun SourcesScreen(contentPadding: PaddingValues) {
                         Icons.Default.Refresh,
                         contentDescription = stringResource(R.string.action_refresh),
                     )
+                }
+            }
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                ),
+            ) {
+                Column(
+                    modifier = Modifier.padding(start = 16.dp, end = 8.dp, top = 12.dp, bottom = 4.dp),
+                ) {
+                    Text(
+                        text = stringResource(R.string.packs_discover_title),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Text(
+                        text = stringResource(R.string.packs_discover_body),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                    ) {
+                        TextButton(onClick = { showPacks = true }) {
+                            Text(stringResource(R.string.packs_browse))
+                        }
+                    }
                 }
             }
             if (sources.isEmpty()) {
@@ -196,6 +233,36 @@ fun SourcesScreen(contentPadding: PaddingValues) {
                     doSync()
                 }
             },
+            onAddFromLink = { raw ->
+                showAdd = false
+                scope.launch {
+                    when (val result = container.feedDiscovery.discover(raw)) {
+                        is FeedDiscovery.Result.Found -> {
+                            val title = result.title?.takeIf { it.isNotBlank() }
+                                ?: Uri.parse(result.feedUrl).host
+                                ?: result.feedUrl
+                            val inserted = container.sourceRepository.add(
+                                SourceType.RSS,
+                                result.feedUrl,
+                                title,
+                            )
+                            if (inserted > 0L) {
+                                snackbarHostState.showSnackbar(
+                                    context.getString(R.string.packs_added_one, title),
+                                )
+                                doSync()
+                            } else {
+                                snackbarHostState.showSnackbar(
+                                    context.getString(R.string.packs_already_one, title),
+                                )
+                            }
+                        }
+
+                        is FeedDiscovery.Result.Failed ->
+                            snackbarHostState.showSnackbar(discoveryMessage(context, result.reason))
+                    }
+                }
+            },
             onAddYouTube = { channelId ->
                 showAdd = false
                 scope.launch {
@@ -249,6 +316,31 @@ fun SourcesScreen(contentPadding: PaddingValues) {
         )
     }
 
+    if (showPacks) {
+        PackSheet(
+            packs = TopicPacks.ALL,
+            onDismiss = { showPacks = false },
+            onAdd = { _, chosen ->
+                showPacks = false
+                scope.launch {
+                    val added = container.sourceRepository.addAll(chosen)
+                    val message = when {
+                        added == 0 -> context.getString(R.string.packs_added_none)
+                        added == chosen.size -> context.getString(R.string.packs_added_n, added)
+                        else -> context.getString(
+                            R.string.packs_added_some,
+                            added,
+                            chosen.size,
+                            chosen.size - added,
+                        )
+                    }
+                    snackbarHostState.showSnackbar(message)
+                    if (added > 0) doSync()
+                }
+            },
+        )
+    }
+
     if (showFilters) {
         FilterRulesDialog(onDismiss = { showFilters = false })
     }
@@ -273,15 +365,7 @@ private fun SourceRow(
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
-            val typeLabel = when (source.sourceType) {
-                SourceType.GN_TOPIC -> stringResource(R.string.source_type_gn_topic)
-                SourceType.GN_SEARCH -> stringResource(R.string.source_type_gn_search)
-                SourceType.RSS -> stringResource(R.string.source_type_rss)
-                SourceType.YOUTUBE -> stringResource(R.string.source_type_youtube)
-                SourceType.REDDIT -> stringResource(R.string.source_type_reddit)
-                SourceType.LEMMY -> stringResource(R.string.source_type_lemmy)
-                SourceType.HACKER_NEWS -> stringResource(R.string.source_type_hackernews)
-            }
+            val typeLabel = sourceTypeLabel(source.sourceType)
             Text(
                 text = typeLabel,
                 style = MaterialTheme.typography.labelSmall,
@@ -315,3 +399,16 @@ private fun SourceRow(
         }
     }
 }
+
+private fun discoveryMessage(
+    context: Context,
+    reason: FeedDiscovery.Reason,
+): String = context.getString(
+    when (reason) {
+        FeedDiscovery.Reason.INVALID_URL -> R.string.feed_discovery_invalid
+        FeedDiscovery.Reason.UNSAFE -> R.string.feed_discovery_unsafe
+        FeedDiscovery.Reason.X_UNSUPPORTED -> R.string.feed_discovery_x
+        FeedDiscovery.Reason.FETCH_FAILED -> R.string.feed_discovery_failed
+        FeedDiscovery.Reason.NO_FEED -> R.string.feed_discovery_none
+    },
+)
