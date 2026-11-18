@@ -135,11 +135,15 @@
     <string name="help_read_title">Reading</string>
     <string name="help_read_body">Tap a story once to expand it (summary + other coverage). Tap again to read the full article in the app — text only, no ads. \"Original\" opens the publisher\'s page.</string>
     <string name="help_organize_title">Organizing</string>
-    <string name="help_organize_body">Swipe a story right to hide it (Undo is offered). The ⋮ menu saves, shares, or opens the story in your browser. Sources → Filters hides stories by keyword or domain.</string>
+    <string name="help_organize_body">Swipe a story right to hide it (Undo is offered). The ⋮ menu saves, shares, or opens the story in your browser. Use the chips above the feed to view All or a single topic. Sources → Filters hides stories by keyword or domain.</string>
     <string name="help_widget_title">Home-screen widget</string>
     <string name="help_widget_body">Long-press your home screen → Widgets → Doomscroll. The scrolling widget needs a launcher that supports scrollable widgets; the front-page widget fits One UI.</string>
     <string name="help_privacy_title">Privacy</string>
     <string name="help_privacy_body">No account, no ads, no tracking. Everything stays on your device, and the app only talks to the feeds you add.</string>
+
+    <string name="feed_topic_all">All</string>
+    <string name="feed_topic_empty">No stories in %1$s right now.</string>
+    <string name="feed_topic_show_all">Show all</string>
 
     <string name="packs_discover_title">Discover topic packs</string>
     <string name="packs_discover_body">AI, construction, Salt Lake City, food, business — add a curated bundle in one tap.</string>

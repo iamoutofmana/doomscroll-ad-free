@@ -3,16 +3,19 @@
 package io.github.iamoutofmana.doomscroll.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -23,6 +26,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -53,11 +57,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.iamoutofmana.doomscroll.R
 import io.github.iamoutofmana.doomscroll.data.repo.StoryClusterer
+import io.github.iamoutofmana.doomscroll.data.repo.filterByTopic
 import io.github.iamoutofmana.doomscroll.data.repo.prefetch
+import io.github.iamoutofmana.doomscroll.domain.topics.SourceTopics
 import io.github.iamoutofmana.doomscroll.ui.LocalAppContainer
 import io.github.iamoutofmana.doomscroll.ui.components.ArticleCard
 import io.github.iamoutofmana.doomscroll.ui.components.BrandMark
@@ -82,6 +89,17 @@ fun FeedScreen(
     val groups by container.articleRepository.feed.collectAsStateWithLifecycle(initialValue = emptyList())
     val sources by container.sourceRepository.sources.collectAsStateWithLifecycle(initialValue = emptyList())
     val hidden by container.articleRepository.hidden.collectAsStateWithLifecycle(initialValue = emptyList())
+    val sourceTopics = remember(sources) { sources.associate { it.id to SourceTopics.topicOf(it.url) } }
+    val topicChips = remember(sources) { SourceTopics.chipsFor(sources.map { it.url }) }
+    var selectedTopicId by rememberSaveable { mutableStateOf<String?>(null) }
+    LaunchedEffect(topicChips) {
+        if (selectedTopicId != null && topicChips.none { it.id == selectedTopicId }) {
+            selectedTopicId = null
+        }
+    }
+    val visibleGroups = remember(groups, sourceTopics, selectedTopicId) {
+        groups.filterByTopic(sourceTopics, selectedTopicId)
+    }
     var refreshing by remember { mutableStateOf(false) }
     var showFiltered by remember { mutableStateOf(false) }
     var showHelp by remember { mutableStateOf(false) }
@@ -143,7 +161,7 @@ fun FeedScreen(
     // Lazy preview fetch when a card is first expanded (summary + hero image).
     LaunchedEffect(expandedId) {
         val id = expandedId ?: return@LaunchedEffect
-        val article = groups
+        val article = visibleGroups
             .asSequence()
             .flatMap { sequenceOf(it.primary) + it.related.asSequence() }
             .firstOrNull { it.id == id } ?: return@LaunchedEffect
@@ -154,10 +172,10 @@ fun FeedScreen(
 
     // Keep the visible top of the feed rich: warm previews whenever the top items change.
     // EnrichmentService throttles repeats per article, so this is cheap in steady state.
-    val topItemIds = groups.take(10).joinToString(",") { it.primary.id.toString() }
+    val topItemIds = visibleGroups.take(10).joinToString(",") { it.primary.id.toString() }
     LaunchedEffect(topItemIds) {
-        if (groups.isNotEmpty()) {
-            runCatching { container.enrichment.prefetch(groups, limit = 10) }
+        if (visibleGroups.isNotEmpty()) {
+            runCatching { container.enrichment.prefetch(visibleGroups, limit = 10) }
         }
     }
 
@@ -244,61 +262,89 @@ fun FeedScreen(
                 onRefresh = { syncNow() },
                 modifier = Modifier.fillMaxSize(),
             ) {
-                if (groups.isEmpty()) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(innerPadding),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(
-                            text = stringResource(R.string.feed_no_articles_body),
-                            textAlign = TextAlign.Center,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(32.dp),
+                Column(modifier = Modifier.fillMaxSize()) {
+                    if (topicChips.size > 1) {
+                        TopicChipsRow(
+                            chips = topicChips,
+                            selectedId = selectedTopicId,
+                            onSelect = { selectedTopicId = it },
+                            topPadding = innerPadding.calculateTopPadding(),
                         )
                     }
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = innerPadding,
-                    ) {
-                        items(groups, key = { it.primary.id }) { group ->
-                            val dismissState = rememberSwipeToDismissBoxState(
-                                confirmValueChange = { it == SwipeToDismissBoxValue.StartToEnd },
-                            )
-                            // Hide only after the dismiss animation completes — hiding mid-swipe
-                            // removes the row while it is still moving and feels like a catch.
-                            LaunchedEffect(dismissState.currentValue) {
-                                if (dismissState.currentValue == SwipeToDismissBoxValue.StartToEnd) {
-                                    onHideWithUndo(group.primary.id)
+                    if (visibleGroups.isEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 32.dp, vertical = 24.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = if (groups.isEmpty()) {
+                                        stringResource(R.string.feed_no_articles_body)
+                                    } else {
+                                        stringResource(
+                                            R.string.feed_topic_empty,
+                                            topicChips.firstOrNull { it.id == selectedTopicId }?.label.orEmpty(),
+                                        )
+                                    },
+                                    textAlign = TextAlign.Center,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                                if (groups.isNotEmpty() && selectedTopicId != null) {
+                                    TextButton(onClick = { selectedTopicId = null }) {
+                                        Text(stringResource(R.string.feed_topic_show_all))
+                                    }
                                 }
                             }
-                            SwipeToDismissBox(
-                                state = dismissState,
-                                modifier = Modifier.animateItem(),
-                                enableDismissFromStartToEnd = true,
-                                enableDismissFromEndToStart = false,
-                                gesturesEnabled = dismissState.currentValue == SwipeToDismissBoxValue.Settled,
-                                backgroundContent = { SwipeHideBackground(dismissState) },
-                            ) {
-                                ArticleCard(
-                                    article = group.primary,
-                                    related = group.related,
-                                    expanded = expandedId == group.primary.id,
-                                    previewLoading = previewLoading && expandedId == group.primary.id,
-                                    onTap = { onCardTap(group) },
-                                    onOpenRelated = { other -> openArticle(other) },
-                                    onOpenInBrowser = { openArticle(group.primary) },
-                                    onToggleSave = {
-                                        scope.launch {
-                                            container.articleRepository.setSaved(
-                                                group.primary.id,
-                                                group.primary.savedAt == null,
-                                            )
-                                        }
-                                    },
+                        }
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth(),
+                            contentPadding = PaddingValues(
+                                top = if (topicChips.size > 1) 4.dp else innerPadding.calculateTopPadding(),
+                                bottom = innerPadding.calculateBottomPadding(),
+                            ),
+                        ) {
+                            items(visibleGroups, key = { it.primary.id }) { group ->
+                                val dismissState = rememberSwipeToDismissBoxState(
+                                    confirmValueChange = { it == SwipeToDismissBoxValue.StartToEnd },
                                 )
+                                // Hide only after the dismiss animation completes — hiding mid-swipe
+                                // removes the row while it is still moving and feels like a catch.
+                                LaunchedEffect(dismissState.currentValue) {
+                                    if (dismissState.currentValue == SwipeToDismissBoxValue.StartToEnd) {
+                                        onHideWithUndo(group.primary.id)
+                                    }
+                                }
+                                SwipeToDismissBox(
+                                    state = dismissState,
+                                    modifier = Modifier.animateItem(),
+                                    enableDismissFromStartToEnd = true,
+                                    enableDismissFromEndToStart = false,
+                                    gesturesEnabled = dismissState.currentValue == SwipeToDismissBoxValue.Settled,
+                                    backgroundContent = { SwipeHideBackground(dismissState) },
+                                ) {
+                                    ArticleCard(
+                                        article = group.primary,
+                                        related = group.related,
+                                        expanded = expandedId == group.primary.id,
+                                        previewLoading = previewLoading && expandedId == group.primary.id,
+                                        onTap = { onCardTap(group) },
+                                        onOpenRelated = { other -> openArticle(other) },
+                                        onOpenInBrowser = { openArticle(group.primary) },
+                                        onToggleSave = {
+                                            scope.launch {
+                                                container.articleRepository.setSaved(
+                                                    group.primary.id,
+                                                    group.primary.savedAt == null,
+                                                )
+                                            }
+                                        },
+                                    )
+                                }
                             }
                         }
                     }
@@ -318,6 +364,37 @@ fun FeedScreen(
 
     if (showHelp) {
         HelpDialog(onDismiss = { showHelp = false })
+    }
+}
+
+@Composable
+private fun TopicChipsRow(
+    chips: List<SourceTopics.Chip>,
+    selectedId: String?,
+    onSelect: (String?) -> Unit,
+    topPadding: Dp,
+) {
+    LazyRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = topPadding),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        item(key = "all") {
+            FilterChip(
+                selected = selectedId == null,
+                onClick = { onSelect(null) },
+                label = { Text(stringResource(R.string.feed_topic_all)) },
+            )
+        }
+        items(chips, key = { it.id }) { chip ->
+            FilterChip(
+                selected = selectedId == chip.id,
+                onClick = { onSelect(chip.id) },
+                label = { Text(chip.label) },
+            )
+        }
     }
 }
 

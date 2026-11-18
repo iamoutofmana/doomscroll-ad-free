@@ -18,6 +18,8 @@ data class TopicPack(
     val title: String,
     val subtitle: String,
     val description: String,
+    /** Compact label for feed filter chips. */
+    val chipLabel: String,
     val sources: List<NewSource>,
 )
 
@@ -51,6 +53,7 @@ object TopicPacks {
             title = "AI & machine learning",
             subtitle = "Labs, research, products",
             description = "Frontier labs, research feeds and tech-press coverage of artificial intelligence.",
+            chipLabel = "AI",
             sources = listOf(
                 rss("The Verge — AI", "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml"),
                 rss("MIT Technology Review", "https://www.technologyreview.com/feed/"),
@@ -67,6 +70,7 @@ object TopicPacks {
             title = "Construction & built environment",
             subtitle = "Projects, trades, policy",
             description = "Trade press, architecture and engineering news, plus practitioner discussion.",
+            chipLabel = "Construction",
             sources = listOf(
                 rss("Construction Dive", "https://www.constructiondive.com/feeds/news/"),
                 rss("ArchDaily", "https://www.archdaily.com/rss"),
@@ -81,6 +85,7 @@ object TopicPacks {
             title = "Salt Lake City metro",
             subtitle = "SLC, Davis County, Utah",
             description = "Local coverage from the Salt Lake Valley, Davis County and across Utah.",
+            chipLabel = "Salt Lake City",
             sources = listOf(
                 geo("Salt Lake City"),
                 rss("Deseret News", "https://www.deseret.com/arc/outboundfeeds/rss/"),
@@ -95,6 +100,7 @@ object TopicPacks {
             title = "Food & dining",
             subtitle = "Cooking, restaurants, industry",
             description = "Food media, restaurant business reporting and cooking coverage.",
+            chipLabel = "Food",
             sources = listOf(
                 rss("Eater", "https://www.eater.com/rss/index.xml"),
                 rss("Bon Appétit", "https://www.bonappetit.com/feed/rss"),
@@ -108,6 +114,7 @@ object TopicPacks {
             title = "Business & markets",
             subtitle = "Companies, markets, small business",
             description = "Market coverage, company news and small-business reporting.",
+            chipLabel = "Business",
             sources = listOf(
                 topic("BUSINESS", "Business — Google News"),
                 rss("CNBC", "https://www.cnbc.com/id/100003114/device/rss/rss.html"),

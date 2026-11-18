@@ -22,6 +22,7 @@ Started because the Samsung media page shows ads and there is no way to replace 
 | Sponsored-item filtering + built-in ad-free reader mode | 2 |
 | YouTube channels, podcasts, Reddit, Lemmy, Hacker News | 3 |
 | Topic packs (AI, construction, Salt Lake City, food, business) + paste-a-link feed discovery | 3 |
+| Feed topic chips (All / AI / Construction / SLC / Food / Business / Other) | 3 |
 | On-device "For You" ranking | 4 |
 | First stable release (GitHub + self-hosted F-Droid repo; official F-Droid pending the 3-month rule) | 5 |
 

@@ -1,0 +1,4 @@
+Feed topics and gentler syncing.
+
+- Topic chips above the feed: All, AI, Construction, Salt Lake City, Food, Business and Other. Tap one to see just that topic; tap All for the full list
+- Google News requests are spaced out and retried automatically with backoff when rate-limited

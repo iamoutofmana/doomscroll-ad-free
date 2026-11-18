@@ -17,6 +17,7 @@ import io.github.iamoutofmana.doomscroll.domain.model.SourceType
 import io.github.iamoutofmana.doomscroll.feedparser.FeedParser
 import io.github.iamoutofmana.doomscroll.feedparser.ParsedFeed
 import io.github.iamoutofmana.doomscroll.feedparser.ParsedItem
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -64,7 +65,13 @@ class SyncEngine(
 
         val enabledRules = rules.enabledRules()
 
+        var gnFetched = false
         for (src in enabled) {
+            // Google News rate-limits bursts; space its requests out (v1.3).
+            if (GoogleNews.isGoogleNewsUrl(src.url)) {
+                if (gnFetched) delay(SyncPacing.GN_SPACING_MS)
+                gnFetched = true
+            }
             val result = runCatching { syncSource(src, seenTitles, hiddenTitleKeys, enabledRules) }
             result
                 .onSuccess { newTotal += it }
@@ -82,7 +89,7 @@ class SyncEngine(
         seenTitles: MutableSet<String>? = null,
         hiddenTitles: Set<String>? = null,
         enabledRules: List<Rule> = emptyList(),
-    ): Int = when (val res = fetcher.fetch(src.url, src.etag, src.lastModified)) {
+    ): Int = when (val res = fetchWithRetry(src)) {
         FeedFetcher.Result.NotModified -> {
             sources.markSynced(src.id, clock(), src.etag, src.lastModified)
             0
@@ -92,6 +99,21 @@ class SyncEngine(
             0
         }
         is FeedFetcher.Result.Content -> ingest(src, res, seenTitles, hiddenTitles, enabledRules)
+    }
+
+    /** Retries rate-limited feeds with backoff before recording a sync error. */
+    private suspend fun fetchWithRetry(src: SourceEntity): FeedFetcher.Result {
+        var attempt = 0
+        while (true) {
+            val result = fetcher.fetch(src.url, src.etag, src.lastModified)
+            val failure = result as? FeedFetcher.Result.Failure
+            val canRetry = failure != null &&
+                SyncPacing.isRateLimited(failure.message) &&
+                attempt < SyncPacing.RETRY_DELAYS_MS.size
+            if (!canRetry) return result
+            delay(SyncPacing.delayForRetry(attempt))
+            attempt++
+        }
     }
 
     private suspend fun ingest(
