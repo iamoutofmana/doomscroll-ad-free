@@ -18,6 +18,7 @@
     <string name="action_filtered">Filtered (%1$d)</string>
     <string name="action_more">More</string>
     <string name="action_delete">Delete</string>
+    <string name="action_scroll_top">Scroll to top</string>
     <string name="action_close">Close</string>
 
     <string name="article_save">Save</string>

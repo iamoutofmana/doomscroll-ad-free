@@ -19,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -47,6 +48,8 @@ private enum class Tab(
 fun DoomscrollApp(pendingArticleId: MutableState<Long?>? = null) {
     var selected by rememberSaveable { mutableIntStateOf(0) }
     var readerArticleId by rememberSaveable { mutableStateOf<Long?>(null) }
+    // Preserve each tab's state (topic selection, scroll position, expanded card) across switches.
+    val tabStateHolder = rememberSaveableStateHolder()
 
     // Widget taps arrive through the activity; open reader mode directly.
     LaunchedEffect(pendingArticleId?.value) {
@@ -81,16 +84,22 @@ fun DoomscrollApp(pendingArticleId: MutableState<Long?>? = null) {
         },
     ) { padding ->
         when (selected) {
-            0 -> FeedScreen(
-                contentPadding = padding,
-                onOpenSources = { selected = 2 },
-                onRead = { readerArticleId = it },
-            )
-            1 -> SavedScreen(
-                contentPadding = padding,
-                onRead = { readerArticleId = it },
-            )
-            else -> SourcesScreen(contentPadding = padding)
+            0 -> tabStateHolder.SaveableStateProvider("feed") {
+                FeedScreen(
+                    contentPadding = padding,
+                    onOpenSources = { selected = 2 },
+                    onRead = { readerArticleId = it },
+                )
+            }
+            1 -> tabStateHolder.SaveableStateProvider("saved") {
+                SavedScreen(
+                    contentPadding = padding,
+                    onRead = { readerArticleId = it },
+                )
+            }
+            else -> tabStateHolder.SaveableStateProvider("sources") {
+                SourcesScreen(contentPadding = padding)
+            }
         }
     }
 }

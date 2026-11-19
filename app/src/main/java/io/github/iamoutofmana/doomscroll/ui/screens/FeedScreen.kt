@@ -17,9 +17,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
@@ -31,6 +33,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -45,12 +48,14 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -72,6 +77,7 @@ import io.github.iamoutofmana.doomscroll.ui.components.FilteredArticlesDialog
 import io.github.iamoutofmana.doomscroll.ui.components.HelpDialog
 import io.github.iamoutofmana.doomscroll.ui.components.rememberOpenArticle
 import io.github.iamoutofmana.doomscroll.widget.refreshFeedWidget
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -99,6 +105,18 @@ fun FeedScreen(
     }
     val visibleGroups = remember(groups, sourceTopics, selectedTopicId) {
         groups.filterByTopic(sourceTopics, selectedTopicId)
+    }
+    val listState = rememberLazyListState()
+    val showScrollTop by remember(listState) {
+        derivedStateOf {
+            listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > 0
+        }
+    }
+    // Reset to the top only when the reader changes topics, not when returning to the tab.
+    LaunchedEffect(listState) {
+        snapshotFlow { selectedTopicId }
+            .drop(1)
+            .collect { listState.scrollToItem(0) }
     }
     var refreshing by remember { mutableStateOf(false) }
     var showFiltered by remember { mutableStateOf(false) }
@@ -143,8 +161,15 @@ fun FeedScreen(
 
     fun onHideWithUndo(id: Long) {
         if (expandedId == id) expandedId = null
+        val index = visibleGroups.indexOfFirst { it.primary.id == id }
         scope.launch {
             container.articleRepository.hide(id)
+            if (index >= 0) {
+                // After removal this index holds the next story; align its top so the
+                // reader lands on the next preview instead of the middle of a card.
+                val target = index.coerceAtMost((listState.layoutInfo.totalItemsCount - 1).coerceAtLeast(0))
+                listState.animateScrollToItem(target)
+            }
             // Replace any previous bar instead of queueing them, and auto-dismiss this one:
             // an action label otherwise defaults to SnackbarDuration.Indefinite.
             snackbarHostState.currentSnackbarData?.dismiss()
@@ -248,6 +273,18 @@ fun FeedScreen(
                 },
             )
         },
+        floatingActionButton = {
+            if (showScrollTop) {
+                SmallFloatingActionButton(
+                    onClick = { scope.launch { listState.animateScrollToItem(0) } },
+                ) {
+                    Icon(
+                        Icons.Default.KeyboardArrowUp,
+                        contentDescription = stringResource(R.string.action_scroll_top),
+                    )
+                }
+            }
+        },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { innerPadding ->
         if (sources.isEmpty()) {
@@ -300,6 +337,7 @@ fun FeedScreen(
                         }
                     } else {
                         LazyColumn(
+                            state = listState,
                             modifier = Modifier
                                 .weight(1f)
                                 .fillMaxWidth(),
