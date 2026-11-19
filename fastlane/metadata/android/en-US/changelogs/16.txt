@@ -1,0 +1,6 @@
+Feed navigation fixes.
+
+- Hiding a story now brings the next story to the top of the screen instead of leaving the list mid-card
+- A scroll-to-top button appears at the bottom right once you scroll down
+- Your selected topic (AI, Food, ...) and scroll position now survive switching to Saved or Sources and back
+- The selected topic also survives screen rotation

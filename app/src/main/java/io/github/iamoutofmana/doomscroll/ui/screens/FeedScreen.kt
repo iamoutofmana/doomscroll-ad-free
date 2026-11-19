@@ -98,8 +98,10 @@ fun FeedScreen(
     val sourceTopics = remember(sources) { sources.associate { it.id to SourceTopics.topicOf(it.url) } }
     val topicChips = remember(sources) { SourceTopics.chipsFor(sources.map { it.url }) }
     var selectedTopicId by rememberSaveable { mutableStateOf<String?>(null) }
-    LaunchedEffect(topicChips) {
-        if (selectedTopicId != null && topicChips.none { it.id == selectedTopicId }) {
+    LaunchedEffect(topicChips, sources.isNotEmpty()) {
+        // Only prune a selection once sources are actually loaded — during activity restore
+        // the source flow emits empty first, and resetting there would silently drop the topic.
+        if (sources.isNotEmpty() && selectedTopicId != null && topicChips.none { it.id == selectedTopicId }) {
             selectedTopicId = null
         }
     }
