@@ -2,7 +2,7 @@
 # Kept conservative & CI-proven; upgrades are deliberate maintenance tasks (see docs/PLAN.md).
 
 [versions]
-agp = "8.7.3"
+agp = "9.5.1"
 kotlin = "2.0.21"
 coreKtx = "1.15.0"
 lifecycleRuntimeKtx = "2.8.7"
